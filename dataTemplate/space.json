@@ -1,0 +1,26 @@
+{
+    "spaceID": "",
+    "space": "",
+    "spaceRule": [
+        {
+            "type": "static",
+            "method": "",
+            "period": [
+                {
+                    "from": "",
+                    "to": ""
+                }
+            ]
+        },
+        {
+            "type": "schedule",
+            "method": "",
+            "period": [
+                {
+                    "from": "",
+                    "to": ""
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "raspberry_api",
+  "version": "1.0.0",
+  "description": "hardware control api using raspberry",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "keywords": [
+    "Node.js",
+    "RaspberryPi",
+    "API"
+  ],
+  "author": "TMineCola",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "mfrc522-rpi": "^1.1.0",
+    "request": "^2.87.0",
+    "rpio": "^0.9.21",
+    "winston": "^2.4.2",
+    "winston-daily-rotate-file": "^3.1.4"
+  }
+}
