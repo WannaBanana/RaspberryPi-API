@@ -1,26 +1,24 @@
 {
-    "spaceID": "",
-    "space": "",
-    "spaceRule": [
-        {
-            "type": "static",
-            "method": "",
-            "period": [
-                {
-                    "from": "",
-                    "to": ""
+    "space": {
+        "department": {
+            "spaceID": {
+                "state": "",
+                "equipment": {
+                    "webcam": "",
+                    "doorLock": {
+                        "power": "",
+                        "state": ""
+                    },
+                    "glassDetect": {
+                        "power": "",
+                        "state": ""
+                    },
+                    "genTwo": {
+                        "power": "",
+                        "state": ""
+                    }
                 }
-            ]
-        },
-        {
-            "type": "schedule",
-            "method": "",
-            "period": [
-                {
-                    "from": "",
-                    "to": ""
-                }
-            ]
+            }
         }
-    ]
+    }
 }
