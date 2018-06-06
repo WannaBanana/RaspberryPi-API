@@ -1,4 +1,7 @@
 {
-    "idNumber": "",
-    "space": []
+    "permission": {
+        "idNumber": {
+            "space": []
+        }
+    }
 }
