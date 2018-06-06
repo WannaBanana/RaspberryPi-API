@@ -1,8 +1,19 @@
 {
-    "idNumber": "",
-    "name": "",
-    "identity": "",
-    "departmentGrade": "",
-    "email": "",
-    "lineUserID": ""
+    "user": {
+        "idNumber": {
+            "state": "",
+            "password": "",
+            "name": "",
+            "identity": "",
+            "departmentGrade": "",
+            "email": "",
+            "lineUserID": "",
+            "card": [
+                {
+                    "cardName": "",
+                    "cardID":""
+                }
+            ]
+        }
+    }
 }
