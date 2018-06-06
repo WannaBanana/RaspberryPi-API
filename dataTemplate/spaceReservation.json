@@ -1,0 +1,13 @@
+{
+    "reservation": {
+        "department":{
+            "spaceID": [
+                {
+                    "method": "",
+                    "start": "",
+                    "end": ""
+                }
+            ]
+        }
+    }
+}
