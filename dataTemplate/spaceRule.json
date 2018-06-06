@@ -1,0 +1,21 @@
+{
+    "spaceRule": {
+       "department": {
+           "spaceID": {
+               "MON": [
+                    {
+                        "method": "",
+                        "start": "",
+                        "end": ""
+                    }
+                ],
+                "TUE": [],
+                "WED": [],
+                "THU": [],
+                "FRI": [],
+                "SAT": [],
+                "SUN": []
+            }
+       }
+    }
+}
