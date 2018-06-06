@@ -1,0 +1,13 @@
+{
+    "alert": {
+        "key": {
+            "type": "",
+            "time": "",
+            "source": "",
+            "event": "",
+            "imgSrc": "",
+            "state": "",
+            "describe": ""
+        }
+    }
+}
