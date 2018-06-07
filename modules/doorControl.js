@@ -2,6 +2,46 @@ module.exports = function (rpio, config) {
 
     var module = {};
 
+    var log = new logSystem(config.main.logDirectory, doorControl);
+    var powerState = false;
+
+    function _doorAttach() {
+        // connect relay and default power open and door close
+        rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
+        rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
+        // let module allow be use
+        powerState = true;
+    }
+
+    function _doorDetach() {
+        // disconnect rpio
+        rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
+        rpio.close(config.lock.openPIN, rpio.PIN_RESET);
+        // let module disabled
+        powerState = false;
+    }
+
+    // event functions
+    function _doorPowerPush() {
+        if(powerState == false) {
+
+        } else {
+
+        }
+        // push Line API
+        // logging
+    }
+
+    function _doorStatePush(state, message) {
+        if(state == 0) {
+
+        } else {
+
+        }
+        // push Line API
+        // logging
+    }
+
     module.doorInit = function () {
         _doorAttach();
     }
@@ -9,15 +49,22 @@ module.exports = function (rpio, config) {
     // control functions
 
     module.doorPowerSwitch = function () {
-        rpio.read(config.lock.powerPIN) == 0 ? rpio.write(config.lock.powerPIN, rpio.HIGH) : rpio.write(config.lock.powerPIN, rpio.LOW)
+        powerState == false ? _doorAttach() : _doorDetach();
+        _doorPowerPush();
 
-        return rpio.read(config.lock.powerPIN);
+        return powerState;
     }
 
-    module.doorOpenSwitch = function () {
-        rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW)
+    module.doorOpenSwitch = function (message) {
+        if(powerState == true) {
+            rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW);
+            let currentState = rpio.read(config.lock.openPIN);
+            _doorStatePush(currentState, message);
 
-        return rpio.read(config.lock.openPIN);
+            return currentState;
+        } else {
+            // log failed record
+        }
     }
 
     module.doorPowerState = function () {
@@ -26,28 +73,6 @@ module.exports = function (rpio, config) {
 
     module.doorOpenState = function () {
         return rpio.read(config.lock.openPIN);
-    }
-
-    function _doorAttach() {
-        // connect relay and default power open and door close
-        rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
-        rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
-    }
-
-    function _doorDetach() {
-        rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
-        rpio.close(config.lock.openPIN, rpio.PIN_RESET);
-    }
-
-    // listen event functions
-    function _doorPowerPush() {
-        // push Line API
-        // logging
-    }
-
-    function _doorStatePush() {
-        // push Line API
-        // logging
     }
 
     return module;

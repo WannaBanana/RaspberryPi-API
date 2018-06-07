@@ -1,10 +1,15 @@
 const rfid = require('mfrc522-rpi');
+const fs = require('fs');
+const logSystem = require('./modules/logControl');
 
 module.exports = rfidReader;
 
-function rfidReader(config) {
+function rfidReader(config, door) {
 
     var module = {};
+
+    var userData = JSON.parse(fs.readFileSync('../offlineData/user.json', 'utf8'));
+    var log = new logSystem(config.main.logDirectory, rfid);
 
     // listen to SPI channel 0
     rfid.initWiringPi(0);
@@ -34,11 +39,26 @@ function rfidReader(config) {
         };
     }
 
-    module.verify = function() {
+    function _verify(id) {
+        for(let studentid in userData) {
+            for(let index in userData[studentid].card) {
+                if(userData[studentid].card[index].cardID == id) {
+                    //open
+                    let state = door.doorOpenSwitch("message");
+                    //log.record();
+                    if(state == 0) {
 
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
-    function read() {
+    module.read = function () {
         // reset card
         rfid.reset();
 
@@ -57,9 +77,14 @@ function rfidReader(config) {
         // If we have the UID, continue
         const uid = response.data;
 
-        //# Rebuild uid to match card's ID
-        var cardID = uid[3].toString(16).padStart(2, "0") + uid[2].toString(16).padStart(2, "0") + uid[1].toString(16).padStart(2, "0") + uid[0].toString(16).padStart(2, "0")
-        return parseInt(cardID, 16);
+        // Rebuild uid to match card's ID
+        var cardID = uid[3].toString(16).padStart(2, "0") + uid[2].toString(16).padStart(2, "0") + uid[1].toString(16).padStart(2, "0") + uid[0].toString(16).padStart(2, "0");
+
+        return _verify(parseInt(cardID, 16));
+    }
+
+    module.jsonReload = function() {
+        userData = JSON.parse(fs.readFileSync('../offlineData/user.json', 'utf8'));
     }
 
     return module;

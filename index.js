@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 rpio.init({mapping: 'physical'});
 
 setInterval(function(){
-    console.log(rfid.read());
+    rfid.read();
 }, 500);
 
 var server = app.listen(config.main.port || 8080, function() {
