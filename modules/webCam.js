@@ -1,4 +1,4 @@
-const logSystem = require('./modules/logControl');
+const logSystem = require('./logControl');
 
 module.exports = webCamControl;
 

@@ -1,3 +1,5 @@
+const logSystem = require('./logControl');
+
 module.exports = function(rpio, config){
 
     var module = {}

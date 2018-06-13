@@ -1,6 +1,6 @@
 const rfid = require('mfrc522-rpi');
 const fs = require('fs');
-const logSystem = require('./modules/logControl');
+const logSystem = require('./logControl');
 
 module.exports = rfidReader;
 
@@ -9,9 +9,9 @@ function rfidReader(config, door) {
     var module = {};
 
     // 讀取離線使用者資料
-    var userData = JSON.parse(fs.readFileSync('../offlineData/user.json', 'utf8'));
+    var userData = JSON.parse(fs.readFileSync('./offlineData/user.json', 'utf8'));
     // 載入檔案紀錄系統
-    var log = new logSystem(config.main.logDirectory, "rfid");
+    var log = new logSystem(config.main.logDirectory, 'rfid');
 
     // 監聽SPI頻道0
     rfid.initWiringPi(0);
@@ -44,16 +44,18 @@ function rfidReader(config, door) {
         let photoSrc;
         // 從每位學生的卡片資料中檢核是否為已登記的卡片
         for(let studentid in userData) {
+            // 檢驗學生所有的卡片
             for(let index in userData[studentid].card) {
                 if(userData[studentid].card[index].cardID == id) {
                     // 開啟門鎖
-                    let state = door.doorOpenSwitch("message");
+                    let state = door.openSwitch('rfid');
                     // 檢查是否成功開啟門鎖, 0為開啟 1為關閉
+                    console.log(state);
                     if(state == 0) {
-                        log.record("verifySuccess " + id + " " + userData[studentid].departmentGrade + " " + userData[studentid].name + " openFailed" + photoSrc);
+                        log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' open ' + photoSrc);
                         return;
                     } else {
-                        log.record("verifySuccess " + id + " " + userData[studentid].departmentGrade + " " + userData[studentid].name + " openSuccess" + photoSrc);
+                        log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' close ' + photoSrc);
                         return;
                     }
                 }
@@ -61,7 +63,7 @@ function rfidReader(config, door) {
         }
 
         // 驗證失敗
-        log.record("verifyFailed " + id + " Unknown " + photoSrc);
+        log.record('verify failed ' + id + ' Unknown ' + photoSrc);
         return;
     }
 
@@ -81,6 +83,7 @@ function rfidReader(config, door) {
         response = rfid.getUid();
         // UID解析錯誤
         if (!response.status) {
+            log.record('card_read failed <Error>: cannot read uid from card.');
             return;
         }
 
@@ -88,14 +91,19 @@ function rfidReader(config, door) {
         const uid = response.data;
 
         // 將UID轉換成學生證編號
-        var cardID = uid[3].toString(16).padStart(2, "0") + uid[2].toString(16).padStart(2, "0") + uid[1].toString(16).padStart(2, "0") + uid[0].toString(16).padStart(2, "0");
+        var cardID = uid[3].toString(16).padStart(2, '0') + uid[2].toString(16).padStart(2, '0') + uid[1].toString(16).padStart(2, '0') + uid[0].toString(16).padStart(2, '0');
 
         // 丟入驗證程序
         return _verify(parseInt(cardID, 16));
     }
 
     module.jsonReload = function() {
-        userData = JSON.parse(fs.readFileSync('../offlineData/user.json', 'utf8'));
+        try {
+            userData = JSON.parse(fs.readFileSync('./offlineData/user.json', 'utf8'));
+            log.record('json_reload success');
+        } catch(err) {
+            log.record('json_reload failed <Error>:' + err);
+        }
     }
 
     return module;
