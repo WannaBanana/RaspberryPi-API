@@ -77,16 +77,20 @@ module.exports = function (rpio, config) {
     module.openSwitch = function(type) {
         // 電源啟動情況下才執行開關門鎖
         if(powerState == true) {
-            // 讀取原始狀態
-            let  = rpio.read(config.lock.openPIN);
-            // 切換繼電器訊號
-            rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW);
-            // 讀取繼電器狀態
-            let currentState = rpio.read(config.lock.openPIN);
-            // 更新門鎖狀態
-            _doorStatePush(currentState);
+            try {
+                // 讀取原始狀態
+                let  = rpio.read(config.lock.openPIN);
+                // 切換繼電器訊號
+                rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW);
+                // 讀取繼電器狀態
+                let currentState = rpio.read(config.lock.openPIN);
+                // 更新門鎖狀態
+                _doorStatePush(currentState);
 
-            return currentState;
+                return currentState;
+            } catch(err) {
+                log.record('door_switch failed <Error>: ' + err);
+            }
         } else {
             // 紀錄失敗訊息
             log.record('door_switch failed <Error>: Power does not enabled');
