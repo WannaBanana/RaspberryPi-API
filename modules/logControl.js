@@ -26,6 +26,8 @@ module.exports = class logSystem {
 
     // 將Log字串寫入
     record(log) {
+        let time = new Date().toISOString();
+        console.log('[' + this.type + '-log] ' + time + ' ' + log);
         this.logger.info(log);
     }
 };
