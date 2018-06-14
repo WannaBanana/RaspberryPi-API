@@ -4,7 +4,7 @@ const logSystem = require('./logControl');
 
 module.exports = rfidReader;
 
-function rfidReader(config, door) {
+function rfidReader(config, door, webcam) {
 
     var module = {};
 
@@ -41,7 +41,7 @@ function rfidReader(config, door) {
     }
 
     function _verify(id) {
-        let photoSrc;
+        let photoSrc = webcam.takePhoto('rfid');
         // 從每位學生的卡片資料中檢核是否為已登記的卡片
         for(let studentid in userData) {
             // 檢驗學生所有的卡片
@@ -50,7 +50,6 @@ function rfidReader(config, door) {
                     // 開啟門鎖
                     let state = door.openSwitch('rfid');
                     // 檢查是否成功開啟門鎖, 0為開啟 1為關閉
-                    console.log(state);
                     if(state == 0) {
                         log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' open ' + photoSrc);
                         return;
@@ -63,7 +62,7 @@ function rfidReader(config, door) {
         }
 
         // 驗證失敗
-        log.record('verify failed ' + id + ' Unknown ' + photoSrc);
+        log.record('verify failed <Info>: ' + id + ' Unknown ' + photoSrc);
         return;
     }
 
