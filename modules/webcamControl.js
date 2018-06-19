@@ -11,7 +11,7 @@ module.exports = function (config) {
         height: 720,
         quality: 100,
         //Delay to take shot
-        delay: 5,
+        delay: 0,
         //Save shots in memory
         saveShots: true,
         // [jpeg, png] support varies
@@ -32,15 +32,17 @@ module.exports = function (config) {
     var log = new logSystem(config.main.logDirectory, "webcam");
 
     module.takePhoto = function (type) {
-        let time = new Date().toISOString();
-
-        // 拍照
-        webcam.capture(config.main.logDirectory + '/webcam/' + time + '.jpg', function(err, src) {
-            if(err) {
-                console.log(err);
-            }
-            console.log(type);
-            return src;
+        return new Promise((resolve, reject) => {
+            let time = new Date().toISOString();
+            // 拍照
+            webcam.capture(config.main.logDirectory + '/webcam/' + time + '.jpg', function(err, src) {
+                if(err) {
+                    log.record('takePhoto failed <Error>: ' + err);
+                    reject(false);
+                }
+                log.record('takePhoto success <Info>: ' + type );
+                resolve(src);
+            });
         });
     }
 
