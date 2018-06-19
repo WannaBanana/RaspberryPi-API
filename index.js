@@ -7,7 +7,7 @@ const webcam = require('./modules/webcamControl')(config);
 const door = require('./modules/doorControl')(rpio, config);
 const rfid = require('./modules/rfidReader')(config, door, webcam);
 const logSystem = require('./modules/logControl');
-
+const routeDoor = require('./route/door');
 
 var app = express();
 
@@ -29,6 +29,15 @@ try {
     log.record('Server startup catch error <Error>: ' + err);
 }
 
+app.use(function(req, res, next) {
+    // 傳入模組控制
+    req.door = door;
+    req.webcam = webcam;
+    req.log = log;
+    next();
+});
+
+app.use('/door', routeDoor);
 
 // 系統終止事件函式
 function gracefulShutdown() {
@@ -42,7 +51,7 @@ function gracefulShutdown() {
     }
     log.record('Server GPIO cleanup');
 
-    console.log('Received kill signal, shutting down gracefully.');
+    console.log('[console] Received kill signal, shutting down gracefully.');
     server.close(function() {
         console.log('[console] Closed out remaining connections.');
         process.exit();
@@ -72,8 +81,6 @@ process.on('SIGINT', function() {
 // 監聽Exception事件
 process.on('uncaughtException', function(err) {
     log.record('Server shutdown by exception <Error>: ' + err.stack || err.message);
-    //console.log( ' UNCAUGHT EXCEPTION ' );
-    //console.log( '[Inside "uncaughtException" event] ' + err.stack || err.message );
     gracefulShutdown();
 });
 
