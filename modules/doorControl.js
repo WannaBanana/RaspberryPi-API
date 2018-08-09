@@ -31,7 +31,7 @@ module.exports = function (rpio, config) {
         }
     }
 
-    /* 作動函式(裝置管理) Private */
+/* 作動函式(裝置管理) Private */
 
     function _doorAttach() {
         if(powerState == true) {
@@ -131,7 +131,7 @@ module.exports = function (rpio, config) {
         }
     }
 
-    /* 控制函式 Public 成功回傳 true, 失敗回傳 false */
+/* 控制函式 Public 成功回傳 true, 失敗回傳 false */
 
     // 啟動時連接GPIO
     module.init = function () {
