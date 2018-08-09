@@ -43,6 +43,7 @@ module.exports = function (rpio, config) {
             lockState = false;
             // 狀態更新
             _doorPowerPush(true);
+            _doorStatePush(false);
             log.record('door_attach success');
             return true;
         } catch(err) {
@@ -61,6 +62,7 @@ module.exports = function (rpio, config) {
             lockState = false;
             // 狀態更新
             _doorPowerPush(false);
+            _doorStatePush(false);
             log.record('door_detach success');
             return true;
         } catch(err) {
