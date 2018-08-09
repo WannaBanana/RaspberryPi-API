@@ -5,8 +5,33 @@ module.exports = function (rpio, config) {
     var module = {};
 
     var log = new logSystem(config.main.logDirectory, 'doorControl');
-    // 電源狀態
+    // 電源狀態, t開f關
     var powerState = false;
+    // 門狀態, t開f關
+    var lockState = false;
+
+    /* 事件函式(訊息管理) Private */
+
+    // 電源狀態通知
+    function _doorPowerPush(state) {
+        if(state == true) {
+            // 電源啟動, 推到Line, 更新firebase
+        } else {
+            // 電源關閉, 推到Line, 更新firebase
+        }
+    }
+
+    // 門鎖狀態通知
+    function _doorStatePush(state) {
+        // 記錄資訊與回傳狀態
+        if(state == true) {
+            // 門鎖打開, 推到Line, 更新firebase
+        } else {
+            // 門鎖關閉, 推到Line, 更新firebase
+        }
+    }
+
+    /* 作動函式(裝置管理) Private */
 
     function _doorAttach() {
         try {
@@ -15,9 +40,14 @@ module.exports = function (rpio, config) {
             rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.HIGH);
             // 紀錄電源狀態
             powerState = true;
+            lockState = false;
+            // 狀態更新
+            _doorPowerPush(true);
             log.record('door_attach success');
+            return true;
         } catch(err) {
             log.record('door_attach failed <Error>: ' + err);
+            return false;
         }
     }
 
@@ -26,81 +56,87 @@ module.exports = function (rpio, config) {
             // 關閉GPIO, 避免訊號異常導致開門
             rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
             rpio.close(config.lock.openPIN, rpio.PIN_RESET);
-            // 更新店員狀態
+            // 更新電源狀態
             powerState = false;
+            lockState = false;
+            // 狀態更新
+            _doorPowerPush(false);
             log.record('door_detach success');
+            return true;
         } catch(err) {
             log.record('door_detach failed <Error>: ' + err);
+            return false;
         }
     }
 
-    /* 事件函式(訊息管理) */
-
-    // 電源狀態通知
-    function _doorPowerPush(state) {
-        if(state == 0) {
-            log.record('door_power on <Info>: Power up.');
-        } else {
-            log.record('door_power off <Info>: Power down.');
-        }
-        // 推至 Line API
+    function _waiting(ms) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(resolve, ms);
+        });
     }
 
-    // 門鎖狀態通知
-    function _doorStatePush(state) {
-        // 記錄資訊與回傳狀態
-        if(state == 0) {
-            log.record('door_switch open <Info>: Door open.');
-        } else {
-            log.record('door_switch close <Info>: Door close.');
+    function _doorConfig(state, delay) {
+        try {
+            switch(state) {
+                case 'on':
+                    rpio.write(config.lock.openPIN, rpio.LOW);
+                    lockState = true;
+                    _doorStatePush(true);
+                    log.record('door_config open');
+                    break;
+                case 'off':
+                    rpio.write(config.lock.openPIN, rpio.HIGH);
+                    lockState = false;
+                    _doorStatePush(false)
+                    log.record('door_config close');
+                    break;
+                case 'temp':
+                    rpio.write(config.lock.openPIN, rpio.LOW);
+                    lockState = true;
+                    _doorStatePush(true);
+                    log.record('door_config open for ' + delay + ' ms');
+                    _waiting(delay).then(() => {
+                        rpio.write(config.lock.openPIN, rpio.HIGH);
+                        lockState = false;
+                        _doorStatePush(false)
+                        log.record('door_config close');
+                    });
+                    break;
+            }
+            return true;
+        } catch(err) {
+            log.record('door_config failed <Error>: ' + err);
+            return false;
         }
-        // 推至 Line API
     }
+
+    /* 控制函式 Public 成功回傳 true, 失敗回傳 false */
 
     // 啟動時連接GPIO
     module.init = function () {
-        _doorAttach();
+        // 啟動繼電器
+        return _doorAttach();
     }
 
-    /* 控制函式 */
-
     // 電源切換
-    module.powerSwitch = function () {
-        powerState == false ? _doorAttach() : _doorDetach();
-        // 更新電源狀態
-        _doorPowerPush(powerState);
-
-        return powerState;
+    module.terminate = function () {
+        // 關閉繼電器
+        return _doorDetach();
     }
 
     // 門鎖切換
-    module.openSwitch = function(type) {
-        // 電源啟動情況下才執行開關門鎖
-        if(powerState == true) {
-            // 讀取原始狀態
-            let  = rpio.read(config.lock.openPIN);
-            // 切換繼電器訊號
-            rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW);
-            // 讀取繼電器狀態
-            let currentState = rpio.read(config.lock.openPIN);
-            // 更新門鎖狀態
-            _doorStatePush(currentState);
-
-            return currentState;
-        } else {
-            // 紀錄失敗訊息
-            log.record('door_switch failed <Error>: Power does not enabled');
-        }
+    module.lockSwitch = function(method, delay = 0) {
+        return _doorConfig(method, delay);
     }
 
     module.powerState = function () {
         // 回傳電源繼電器狀態
-        return rpio.read(config.lock.powerPIN);
+        return powerState;
     }
 
     module.openState = function () {
         // 回傳門鎖繼電器狀態
-        return rpio.read(config.lock.openPIN);
+        return lockState;
     }
 
     return module;
