@@ -4,7 +4,7 @@ const logSystem = require('./logControl');
 
 module.exports = rfidReader;
 
-function rfidReader(config, door) {
+function rfidReader(config, door, webcam) {
 
     var module = {};
 
@@ -41,30 +41,31 @@ function rfidReader(config, door) {
     }
 
     function _verify(id) {
-        let photoSrc;
-        // 從每位學生的卡片資料中檢核是否為已登記的卡片
-        for(let studentid in userData) {
-            // 檢驗學生所有的卡片
-            for(let index in userData[studentid].card) {
-                if(userData[studentid].card[index].cardID == id) {
-                    // 開啟門鎖
-                    let state = door.openSwitch('rfid');
-                    // 檢查是否成功開啟門鎖, 0為開啟 1為關閉
-                    console.log(state);
-                    if(state == 0) {
-                        log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' open ' + photoSrc);
-                        return;
-                    } else {
-                        log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' close ' + photoSrc);
-                        return;
+        //let photoSrc = webcam.takePhoto('rfid');
+        webcam.takePhoto('rfid').then(photoSrc => {
+            // 從每位學生的卡片資料中檢核是否為已登記的卡片
+            for(let studentid in userData) {
+                // 檢驗學生所有的卡片
+                for(let index in userData[studentid].card) {
+                    if(userData[studentid].card[index].cardID == id) {
+                        // 開啟門鎖
+                        let state = door.openSwitch('rfid');
+                        // 檢查是否成功開啟門鎖, 0為開啟 1為關閉
+                        if(state == 0) {
+                            log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' open ' + photoSrc);
+                            return;
+                        } else {
+                            log.record('verify success <Info>: ' + id + ' ' + userData[studentid].departmentGrade + ' ' + userData[studentid].name + ' close ' + photoSrc);
+                            return;
+                        }
                     }
                 }
             }
-        }
 
-        // 驗證失敗
-        log.record('verify failed ' + id + ' Unknown ' + photoSrc);
-        return;
+            // 驗證失敗
+            log.record('verify failed <Info>: ' + id + ' Unknown ' + photoSrc);
+            return;
+        });
     }
 
     module.read = function () {
