@@ -34,6 +34,9 @@ module.exports = function (rpio, config) {
     /* 作動函式(裝置管理) Private */
 
     function _doorAttach() {
+        if(powerState == true) {
+            return false;
+        }
         try {
             // 預設啟動電源上鎖, 不開啟
             rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.LOW);
@@ -53,6 +56,9 @@ module.exports = function (rpio, config) {
     }
 
     function _doorDetach() {
+        if(powerState == false) {
+            return false;
+        }
         try {
             // 關閉GPIO, 避免訊號異常導致開門
             rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
@@ -80,13 +86,13 @@ module.exports = function (rpio, config) {
     function _doorConfig(state, delay) {
         try {
             switch(state) {
-                case 'on':
+                case 'open':
                     rpio.write(config.lock.openPIN, rpio.LOW);
                     lockState = false;
                     _doorStatePush(false);
                     log.record('door_config open');
                     break;
-                case 'off':
+                case 'close':
                     rpio.write(config.lock.openPIN, rpio.HIGH);
                     lockState = true;
                     _doorStatePush(true)
