@@ -7,7 +7,7 @@ module.exports = function (rpio, config) {
     var log = new logSystem(config.main.logDirectory, 'doorControl');
     // 電源狀態, t開f關
     var powerState = false;
-    // 門狀態, t開f關
+    // 門狀態, t關f開 (lock = true為關)
     var lockState = false;
 
     /* 事件函式(訊息管理) Private */
@@ -24,7 +24,7 @@ module.exports = function (rpio, config) {
     // 門鎖狀態通知
     function _doorStatePush(state) {
         // 記錄資訊與回傳狀態
-        if(state == true) {
+        if(state == false) {
             // 門鎖打開, 推到Line, 更新firebase
         } else {
             // 門鎖關閉, 推到Line, 更新firebase
@@ -40,10 +40,10 @@ module.exports = function (rpio, config) {
             rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.HIGH);
             // 紀錄電源狀態
             powerState = true;
-            lockState = false;
+            lockState = true;
             // 狀態更新
             _doorPowerPush(true);
-            _doorStatePush(false);
+            _doorStatePush(true);
             log.record('door_attach success');
             return true;
         } catch(err) {
@@ -82,25 +82,25 @@ module.exports = function (rpio, config) {
             switch(state) {
                 case 'on':
                     rpio.write(config.lock.openPIN, rpio.LOW);
-                    lockState = true;
-                    _doorStatePush(true);
+                    lockState = false;
+                    _doorStatePush(false);
                     log.record('door_config open');
                     break;
                 case 'off':
                     rpio.write(config.lock.openPIN, rpio.HIGH);
-                    lockState = false;
-                    _doorStatePush(false)
+                    lockState = true;
+                    _doorStatePush(true)
                     log.record('door_config close');
                     break;
                 case 'temp':
                     rpio.write(config.lock.openPIN, rpio.LOW);
-                    lockState = true;
-                    _doorStatePush(true);
+                    lockState = false;
+                    _doorStatePush(false);
                     log.record('door_config open for ' + delay + ' ms');
                     _waiting(delay).then(() => {
                         rpio.write(config.lock.openPIN, rpio.HIGH);
-                        lockState = false;
-                        _doorStatePush(false)
+                        lockState = true;
+                        _doorStatePush(true)
                         log.record('door_config close');
                     });
                     break;
@@ -108,6 +108,17 @@ module.exports = function (rpio, config) {
             return true;
         } catch(err) {
             log.record('door_config failed <Error>: ' + err);
+            return false;
+        }
+    }
+
+    function _reload() {
+        try {
+            lockState = (rpio.read(config.lock.openPIN) ? true : false);
+            powerState = (rpio.read(config.lock.powerPIN) ? false : true);
+            return true;
+        } catch(err) {
+            log.record('door_reload failed <Error>: ' + err);
             return false;
         }
     }
@@ -124,6 +135,18 @@ module.exports = function (rpio, config) {
     module.terminate = function () {
         // 關閉繼電器
         return _doorDetach();
+    }
+
+    module.reload = function() {
+        if(_reload()) {
+            return {
+                "power": powerState,
+                "lock": lockState
+            }
+        } else {
+            return false;
+        }
+
     }
 
     // 門鎖切換
