@@ -116,6 +116,8 @@ module.exports = function (rpio, config) {
         try {
             lockState = (rpio.read(config.lock.openPIN) ? true : false);
             powerState = (rpio.read(config.lock.powerPIN) ? false : true);
+            _doorPowerPush(powerState);
+            _doorStatePush(lockState);
             return true;
         } catch(err) {
             log.record('door_reload failed <Error>: ' + err);
