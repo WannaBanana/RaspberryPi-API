@@ -3,12 +3,12 @@ const router = express.Router();
 
 /* 查詢門鎖狀態 */
 router.get('/door', function(req, res) {
-    let result = req.door.reload();
+    let result = req.door.state();
     if (result) {
         res.status(200).send(result);
     } else {
         res.status(500).send({
-            "message": "狀態重新讀取失敗"
+            "message": "狀態讀取失敗"
         });
     }
 });
@@ -60,6 +60,18 @@ router.put('/door', function(req, res) {
     } else {
         res.status(500).send({
             "message": "門鎖裝置啟動失敗"
+        });
+    }
+});
+
+/* 更新門鎖狀態 */
+router.patch('/door', function(req, res) {
+    let result = req.door.reload();
+    if (result) {
+        res.status(200).send(result);
+    } else {
+        res.status(500).send({
+            "message": "重新讀取狀態失敗"
         });
     }
 });
