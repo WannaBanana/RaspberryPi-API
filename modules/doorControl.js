@@ -198,11 +198,10 @@ module.exports = function (rpio, config) {
                 "power": powerState,
                 "lock": lockState,
                 "door": doorState
-            }
+            };
         } else {
             return false;
         }
-
     }
 
     // 門鎖切換
@@ -210,19 +209,13 @@ module.exports = function (rpio, config) {
         return _doorConfig(method, delay);
     }
 
-    module.powerState = function () {
+    module.state = function () {
         // 回傳電源繼電器狀態
-        return powerState;
-    }
-
-    module.openState = function () {
-        // 回傳門鎖繼電器狀態
-        return lockState;
-    }
-
-    module.doorState = function () {
-        // 回傳門鎖關閉狀態
-        return doorState;
+        return {
+            "power": powerState,
+            "lock": lockState,
+            "door": doorState
+        };
     }
 
     return module;
