@@ -18,8 +18,10 @@ module.exports = function (rpio, config) {
     function _doorPowerPush(state) {
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
+            console.log('Power ON');
         } else {
             // 電源關閉, 推到Line, 更新firebase
+            console.log('Power OFF');
         }
     }
 
@@ -28,8 +30,10 @@ module.exports = function (rpio, config) {
         // 記錄資訊與回傳狀態
         if(state == false) {
             // 門鎖打開, 推到Line, 更新firebase
+            console.log('LOCK ON');
         } else {
             // 門鎖關閉, 推到Line, 更新firebase
+            console.log('LOCK OFF');
         }
     }
 
@@ -38,8 +42,10 @@ module.exports = function (rpio, config) {
         // 紀錄資訊與回傳狀態
         if(state == true) {
             // 門關閉, 推到Line, 更新firebase
+            console.log('DOOR ON');
         } else {
             // 門開啟, 推到Line, 更新firebase
+            console.log('DOOR OFF');
         }
     }
 
