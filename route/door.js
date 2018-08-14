@@ -53,7 +53,7 @@ router.post('/door', function(req, res) {
 
 /* 啟動電源 */
 router.put('/door', function(req, res) {
-    if(req.door.attach()) {
+    if(req.door.init()) {
         res.status(200).send({
             "message": "門鎖裝置啟動成功"
         });
@@ -78,7 +78,7 @@ router.patch('/door', function(req, res) {
 
 /* 關閉電源 */
 router.delete('/door', function(req, res) {
-    if(req.door.detach()) {
+    if(req.door.terminate()) {
         res.status(200).send({
             "message": "門鎖裝置關閉成功"
         });
