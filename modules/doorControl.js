@@ -192,26 +192,6 @@ module.exports = function (rpio, config) {
         return _doorDetach();
     }
 
-<<<<<<< HEAD
-    // 門鎖切換
-    module.openSwitch = function(type) {
-        // 電源啟動情況下才執行開關門鎖
-        if(powerState == true) {
-            try {
-                // 讀取原始狀態
-                let  = rpio.read(config.lock.openPIN);
-                // 切換繼電器訊號
-                rpio.read(config.lock.openPIN) == 0 ? rpio.write(config.lock.openPIN, rpio.HIGH) : rpio.write(config.lock.openPIN, rpio.LOW);
-                // 讀取繼電器狀態
-                let currentState = rpio.read(config.lock.openPIN);
-                // 更新門鎖狀態
-                _doorStatePush(currentState, type);
-
-                return currentState;
-            } catch(err) {
-                log.record('door_switch failed <Error>: ' + err);
-            }
-=======
     module.reload = function() {
         if(_reload()) {
             return {
@@ -219,7 +199,6 @@ module.exports = function (rpio, config) {
                 "lock": lockState,
                 "door": doorState
             };
->>>>>>> a957b11f75746716e9d79f6060571c02264e8621
         } else {
             return false;
         }
