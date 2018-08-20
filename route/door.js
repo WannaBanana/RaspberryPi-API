@@ -17,8 +17,9 @@ router.get('/state', function(req, res, next) {
 });
 
 /* 門鎖狀態切換 */
-router.post('/state', function(req, res, next) {
-
+router.get('/switch', function(req, res, next) {
+    req.door.openSwitch('Request');
+    res.send({'state':200})
 });
 
 module.exports = router;

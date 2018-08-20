@@ -47,12 +47,12 @@ module.exports = function (rpio, config) {
     }
 
     // 門鎖狀態通知
-    function _doorStatePush(state) {
+    function _doorStatePush(state, type) {
         // 記錄資訊與回傳狀態
         if(state == 0) {
-            log.record('door_switch open <Info>: Door open.');
+            log.record('door_switch open <Info>: Door open. Using: ' + type);
         } else {
-            log.record('door_switch close <Info>: Door close.');
+            log.record('door_switch close <Info>: Door close. Using: ' + type);
         }
         // 推至 Line API
     }
@@ -85,7 +85,7 @@ module.exports = function (rpio, config) {
                 // 讀取繼電器狀態
                 let currentState = rpio.read(config.lock.openPIN);
                 // 更新門鎖狀態
-                _doorStatePush(currentState);
+                _doorStatePush(currentState, type);
 
                 return currentState;
             } catch(err) {
