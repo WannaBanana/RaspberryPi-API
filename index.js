@@ -3,18 +3,20 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const config = require('./ENV.json');
 const rpio = require('rpio');
-const webcam = require('./modules/webcamControl')(config);
-const door = require('./modules/doorControl')(rpio, config);
-const rfid = require('./modules/rfidReader')(config, door, webcam);
-const logSystem = require('./modules/logControl');
-const routeDoor = require('./route/door');
 
 var app = express();
 
+// 載入紀錄物件
+const logSystem = require('./modules/logControl');
 const log = new logSystem(config.main.logDirectory, 'api-system');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+const webcam = require('./modules/webcamControl')(config);
+const door = require('./modules/doorControl')(rpio, config);
+const glass = require('./modules/glassDetect')(rpio, config);
+const rfid = require('./modules/rfidReader')(config, door, webcam);
 
 try {
     // gpio以物理編號載入
@@ -22,22 +24,29 @@ try {
     // 門鎖初始化
     door.init();
     // 綁定 rfid 掃描
-    setInterval(function(){
-        rfid.read();
-    }, 500);
+    rfid.init();
+    // 玻璃感應器初始化
+    glass.init();
 } catch(err) {
     log.record('Server startup catch error <Error>: ' + err);
 }
 
 app.use(function(req, res, next) {
     // 傳入模組控制
+    req.rfid = rfid;
     req.door = door;
     req.webcam = webcam;
     req.log = log;
     next();
 });
 
+const routeDoor = require('./route/door');
+const routeRfid = require('./route/rfid');
+const routeGlass = require('./route/glass');
+
 app.use('/door', routeDoor);
+app.use('/glass', routeGlass);
+app.use('/rfid', routeRfid);
 
 // 系統終止事件函式
 function gracefulShutdown() {
