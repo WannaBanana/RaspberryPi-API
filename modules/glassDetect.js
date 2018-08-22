@@ -27,8 +27,9 @@ module.exports = function(rpio, config){
         console.log('Glass crack detect');
     }
 
-    function _glassCasePush(state) {
-        if(state == true) {
+    function _glassCasePush() {
+        caseState = (rpio.read(config.glass.casePIN) ? true : false);
+        if(caseState == true) {
             // 盒子開啟, 推到Line, 記錄到firebase
             console.log('case ON');
         } else {
@@ -42,11 +43,11 @@ module.exports = function(rpio, config){
     function _glassAttach() {
         try {
             // 啟動所有訊號
-            rpio.open(config.glass.powerPIN, rpio.OUTPUT, rpio.LOW);
+            rpio.open(config.glass.powerPIN, rpio.OUTPUT, rpio.HIGH);
             rpio.open(config.glass.casePIN, rpio.INPUT);
             rpio.open(config.glass.detectPIN, rpio.INPUT);
             // 綁定蓋子事件
-            rpio.poll(config.glass.casePIN, _glassCasePush(rpio.read(config.glass.casePIN)), rpio.POLL_BOTH);
+            rpio.poll(config.glass.casePIN, _glassCasePush, rpio.POLL_BOTH);
             // 綁定觸發事件
             rpio.poll(config.glass.detectPIN, _glassDetectPush, rpio.POLL_HIGH);
             _reload();
@@ -59,8 +60,6 @@ module.exports = function(rpio, config){
 
     function _glassDetach() {
         try {
-            // 關閉繼電器
-            rpio.open(config.glass.powerPIN, rpio.OUTPUT, rpio.HIGH);
             // 重置所有訊號
             rpio.close(config.glass.powerPIN, rpio.PIN_RESET);
             rpio.close(config.glass.casePIN, rpio.PIN_RESET);

@@ -7,9 +7,9 @@ module.exports = function (rpio, config) {
     var log = new logSystem(config.main.logDirectory, 'doorControl');
     // 電源狀態, t開f關
     var powerState = false;
-    // 門鎖狀態, t關f開 (lock = true為關)
+    // 門鎖狀態, t關f開 (lock = true為上鎖)
     var lockState = false;
-    // 門狀態, t關上f開啟
+    // 門狀態, t開啟f關閉
     var doorState = false;
 
 /* 事件函式(訊息管理) Private */
@@ -41,10 +41,10 @@ module.exports = function (rpio, config) {
     function _closeStatePush(state) {
         // 紀錄資訊與回傳狀態
         if(state == true) {
-            // 門關閉, 推到Line, 更新firebase
+            // 門開啟, 推到Line, 更新firebase
             console.log('DOOR ON');
         } else {
-            // 門開啟, 推到Line, 更新firebase
+            // 門關閉, 推到Line, 更新firebase
             console.log('DOOR OFF');
         }
     }
@@ -57,8 +57,8 @@ module.exports = function (rpio, config) {
         }
         try {
             // 預設啟動電源上鎖, 不開啟
-            rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.LOW);
-            rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.HIGH);
+            rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
+            rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
             rpio.open(config.lock.doorPIN, rpio.INPUT);
             // 綁定開關門事件
             rpio.poll(config.lock.doorPIN, _pollEvent);
@@ -104,26 +104,26 @@ module.exports = function (rpio, config) {
         try {
             switch(state) {
                 case 'open':
-                    rpio.write(config.lock.openPIN, rpio.LOW);
+                    rpio.write(config.lock.openPIN, rpio.HIGH);
                     lockState = false;
-                    _doorStatePush(false);
+                    _doorStatePush(true);
                     log.record('door_config open');
                     break;
                 case 'close':
-                    rpio.write(config.lock.openPIN, rpio.HIGH);
+                    rpio.write(config.lock.openPIN, rpio.LOW);
                     lockState = true;
-                    _doorStatePush(true)
+                    _doorStatePush(false)
                     log.record('door_config close');
                     break;
                 case 'temp':
-                    rpio.write(config.lock.openPIN, rpio.LOW);
+                    rpio.write(config.lock.openPIN, rpio.HIGH);
                     lockState = false;
-                    _doorStatePush(false);
+                    _doorStatePush(true);
                     log.record('door_config open for ' + delay + ' ms');
                     _waiting(delay).then(() => {
-                        rpio.write(config.lock.openPIN, rpio.HIGH);
+                        rpio.write(config.lock.openPIN, rpio.LOW);
                         lockState = true;
-                        _doorStatePush(true)
+                        _doorStatePush(false)
                         log.record('door_config close');
                     });
                     break;
@@ -137,8 +137,8 @@ module.exports = function (rpio, config) {
 
     function _closeEvent() {
         try {
-            _closeStatePush(true);
-            doorState = true;
+            _closeStatePush(false);
+            doorState = false;
             return true;
         } catch(err) {
             log.record('door_close failed <Error>: ' + err);
@@ -148,8 +148,8 @@ module.exports = function (rpio, config) {
 
     function _openEvent() {
         try {
-            _closeStatePush(false);
-            doorState = false;
+            _closeStatePush(true);
+            doorState = true;
             return true;
         } catch(err) {
             log.record('door_open failed <Error>: ' + err);
@@ -160,16 +160,16 @@ module.exports = function (rpio, config) {
     function _pollEvent() {
         doorState = (rpio.read(config.lock.doorPIN) ? true : false);
         if(doorState == true) {
-            _closeEvent();
-        } else {
             _openEvent();
+        } else {
+            _closeEvent();
         }
     }
 
     function _reload() {
         try {
-            lockState = (rpio.read(config.lock.openPIN) ? true : false);
-            powerState = (rpio.read(config.lock.powerPIN) ? false : true);
+            lockState = (rpio.read(config.lock.openPIN) ? false : true);
+            powerState = (rpio.read(config.lock.powerPIN) ? true : false);
             doorState = (rpio.read(config.lock.doorPIN) ? true : false);
             _doorPowerPush(powerState);
             _doorStatePush(lockState);

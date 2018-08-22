@@ -26,3 +26,5 @@ router.delete('/rfid', function(req, res) {
         });
     }
 });
+
+module.exports = router;

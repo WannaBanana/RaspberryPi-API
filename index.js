@@ -44,14 +44,22 @@ const routeDoor = require('./route/door');
 const routeRfid = require('./route/rfid');
 const routeGlass = require('./route/glass');
 
-app.use('/door', routeDoor);
-app.use('/glass', routeGlass);
-app.use('/rfid', routeRfid);
+app.use('/', [routeDoor, routeGlass, routeRfid]);
 
 // 系統終止事件函式
 function gracefulShutdown() {
-    // 終止GPIO
-    let gpioPin = [3,5,7,11,12,13,15,16,18,22,29,31,32,33,37];
+    try {
+        // 門鎖終止運作
+        door.terminate();
+        // 終止 rfid 掃描
+        rfid.terminate();
+        // 玻璃感應器終止運作
+        glass.terminate();
+    } catch(err) {
+        log.record('Server shutdown catch error <Error>: ' + err);
+    }
+    // 檢查並終止GPIO
+    let gpioPin = [3,5,7,8,10,11,12,13,15,16,18,19,21,22,23,24,26,29,31,32,33,35,36,37,38,40];
     for(let index in gpioPin) {
         if(rpio.read(gpioPin[index]) == 1) {
             rpio.write(gpioPin[index], 0);
