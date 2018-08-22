@@ -98,6 +98,9 @@ module.exports = function (rpio, config) {
     }
 
     function _doorConfig(state, delay) {
+        if(powerState == false) {
+            return false;
+        }
         try {
             switch(state) {
                 case 'open':
