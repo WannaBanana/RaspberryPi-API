@@ -41,6 +41,9 @@ module.exports = function(rpio, config){
 /* 作動函式(裝置管理) Private */
 
     function _glassAttach() {
+        if(powerState == true) {
+            return false;
+        }
         try {
             // 啟動所有訊號
             rpio.open(config.glass.powerPIN, rpio.OUTPUT, rpio.HIGH);
@@ -59,6 +62,9 @@ module.exports = function(rpio, config){
     }
 
     function _glassDetach() {
+        if(powerState == false) {
+            return false;
+        }
         try {
             // 重置所有訊號
             rpio.close(config.glass.powerPIN, rpio.PIN_RESET);
@@ -73,6 +79,9 @@ module.exports = function(rpio, config){
     }
 
     function _reload() {
+        if(powerState == false) {
+            return false;
+        }
         try {
             powerState = (rpio.read(config.glass.powerPIN) ? false : true);
             caseState = (rpio.read(config.glass.casePIN) ? true : false);
