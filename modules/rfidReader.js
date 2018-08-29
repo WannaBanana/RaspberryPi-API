@@ -108,7 +108,7 @@ function rfidReader(config, door, webcam) {
         }
 
         // 非累計超過三次，則紀錄錯誤卡號即可
-        log.record('rfid_verify failed <Info>: ' + id + ' Unknown ');
+        log.record('rfid_verify failed <Info>: ' + id + ' Unknown_user ');
         return;
     }
 
@@ -148,6 +148,7 @@ function rfidReader(config, door, webcam) {
                 timer = setTimeout(_read, 1000);
                 rfidState = true;
                 _rfidStatePush(rfidState);
+                log.record('rfid_attach success')
                 return true;
             } catch(err) {
                 log.record('rfid_attach failed <Error>: ' + err);
@@ -164,6 +165,7 @@ function rfidReader(config, door, webcam) {
                 clearTimeout(timer);
                 rfidState = false;
                 _rfidStatePush(rfidState);
+                log.record('rfid_detach success')
                 return true;
             } catch(err) {
                 log.record('rfid_detach failed <Error>: ' + err);
