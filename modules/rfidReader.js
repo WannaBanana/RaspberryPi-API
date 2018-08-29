@@ -5,9 +5,7 @@ const config = require('../ENV.json');
 const webcam = require('./webcamControl');
 const door = require('./doorControl');
 
-module.exports = rfidReader;
-
-function rfidReader() {
+module.exports = function () {
 
     var module = {};
 
