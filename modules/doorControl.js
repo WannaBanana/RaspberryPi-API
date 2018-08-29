@@ -175,6 +175,9 @@ module.exports = function (rpio, config) {
     }
 
     function _reload() {
+        if(powerState == false) {
+            return false;
+        }
         try {
             lockState = (rpio.read(config.lock.openPIN) ? false : true);
             powerState = (rpio.read(config.lock.powerPIN) ? true : false);
