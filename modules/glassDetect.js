@@ -51,6 +51,7 @@ module.exports = function(rpio, config){
             // 綁定觸發事件
             rpio.poll(config.glass.detectPIN, _glassDetectPush, rpio.POLL_HIGH);
             _reload();
+            log.record('glass_attach success');
             return true;
         } catch(err) {
             log.record('glass_attach failed <Error>: ' + err);
@@ -65,6 +66,7 @@ module.exports = function(rpio, config){
             rpio.close(config.glass.casePIN, rpio.PIN_RESET);
             rpio.close(config.glass.detectPIN, rpio.PIN_RESET);
             _reload();
+            log.record('glass_detach success');
             return true;
         } catch(err) {
             log.record('glass_detach failed <Error>: ' + err);
@@ -78,6 +80,7 @@ module.exports = function(rpio, config){
             caseState = (rpio.read(config.glass.casePIN) ? true : false);
             _glassPowerPush(powerState);
             _glassCasePush(caseState);
+            log.record('glass_reload success')
             return true;
         } catch(err) {
             log.record('glass_reload failed <Error>: ' + err);
