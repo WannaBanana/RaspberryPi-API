@@ -98,6 +98,9 @@ module.exports = function (rpio, config) {
     }
 
     function _doorConfig(state, delay) {
+        if(powerState == false) {
+            return false;
+        }
         try {
             switch(state) {
                 case 'open':
@@ -124,6 +127,9 @@ module.exports = function (rpio, config) {
                         log.record('door_config close');
                     });
                     break;
+                default:
+                    log.record('door_config failed <Error>: Could not find method');
+                    return false;
             }
             return true;
         } catch(err) {
@@ -155,7 +161,12 @@ module.exports = function (rpio, config) {
     }
 
     function _pollEvent() {
+        let temp = doorState;
         doorState = (rpio.read(config.lock.doorPIN) ? true : false);
+        // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
+        if(temp == doorState) {
+            return;
+        }
         if(doorState == true) {
             _openEvent();
         } else {
@@ -171,6 +182,7 @@ module.exports = function (rpio, config) {
             _doorPowerPush(powerState);
             _doorStatePush(lockState);
             _closeStatePush(doorState);
+            log.record('door_reload success');
             return true;
         } catch(err) {
             log.record('door_reload failed <Error>: ' + err);
