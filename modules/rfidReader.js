@@ -1,10 +1,13 @@
 const rfid = require('mfrc522-rpi');
 const fs = require('fs');
 const logSystem = require('./logControl');
+const config = require('../ENV.json');
+const webcam = require('./webcamControl');
+const door = require('./doorControl');
 
 module.exports = rfidReader;
 
-function rfidReader(config, door, webcam) {
+function rfidReader() {
 
     var module = {};
 
@@ -204,4 +207,4 @@ function rfidReader(config, door, webcam) {
     }
 
     return module;
-};
+}();

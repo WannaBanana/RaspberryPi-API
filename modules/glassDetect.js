@@ -1,6 +1,8 @@
 const logSystem = require('./logControl');
+const rpio = require('rpio');
+const config = require('../ENV.json');
 
-module.exports = function(rpio, config){
+module.exports = function(){
 
     var module = {}
 
@@ -126,4 +128,4 @@ module.exports = function(rpio, config){
     }
 
     return module;
-};
+}();

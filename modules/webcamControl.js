@@ -1,7 +1,8 @@
 const logSystem = require('./logControl');
 const NodeWebcam = require('node-webcam');
+const config = require('../ENV.json');
 
-module.exports = function (config) {
+module.exports = function () {
 
     var module = {};
 
@@ -47,4 +48,4 @@ module.exports = function (config) {
     }
 
     return module;
-};
+}();
