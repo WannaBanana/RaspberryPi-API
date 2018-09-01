@@ -84,7 +84,7 @@ module.exports = function(){
 
     function _reload() {
         try {
-            powerState = (rpio.read(config.glass.powerPIN) ? false : true);
+            powerState = (rpio.read(config.glass.powerPIN) ? true : false);
             caseState = (rpio.read(config.glass.casePIN) ? true : false);
             _glassPowerPush(powerState);
             _glassCasePush(caseState);
@@ -125,8 +125,4 @@ module.exports = function(){
     }
 
     return module;
-<<<<<<< HEAD
-};
-=======
 }();
->>>>>>> b3971507f35375f166022a2db6a91d9f294c452d
