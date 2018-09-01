@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const request = require('request');
 const config = require('./ENV.json');
 const rpio = require('rpio');
 
@@ -13,10 +12,10 @@ const log = new logSystem(config.main.logDirectory, 'api-system');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const webcam = require('./modules/webcamControl')(config);
-const door = require('./modules/doorControl')(rpio, config);
-const glass = require('./modules/glassDetect')(rpio, config);
-const rfid = require('./modules/rfidReader')(config, door, webcam);
+const webcam = require('./modules/webcamControl');
+const door = require('./modules/doorControl');
+const glass = require('./modules/glassDetect');
+const rfid = require('./modules/rfidReader');
 
 try {
     // gpio以物理編號載入
