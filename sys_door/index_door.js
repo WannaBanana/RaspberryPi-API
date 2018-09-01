@@ -11,6 +11,9 @@ const log = new logSystem(config.main.logDirectory, 'api-system-' + prefix);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// 初始化門鎖
+door.init();
+
 /* Server routing */
 
     /* 查詢門鎖狀態 */
@@ -100,6 +103,30 @@ app.use(bodyParser.json());
             });
         }
     });
+/* Server function */
+
+    function gracefulShutdown() {
+        try {
+            // 終止 rfid 掃描
+            rfid.terminate();
+        } catch(err) {
+            log.record('[' + prefix + '] Server shutdown catch error <Error>: ' + err);
+        }
+
+        log.record('[' + prefix + '] Server GPIO cleanup');
+
+        console.log('[console] Received kill signal, shutting down gracefully.');
+        server.close(function() {
+            console.log('[console] Closed out remaining connections.');
+            process.exit();
+        });
+
+        // if after
+        setTimeout(function() {
+            console.error('[console] Could not close connections in time, forcefully shutting down');
+            process.exit();
+        }, 10*1000);
+    }
 
 /* Server setting */
 
