@@ -19,7 +19,6 @@
     "mfrc522-rpi": "^1.1.0",
     "node-webcam": "^0.4.3",
     "request": "^2.88.0",
-    "rpio": "^0.9.22",
     "winston": "^2.4.4",
     "winston-daily-rotate-file": "^3.3.2"
   }
