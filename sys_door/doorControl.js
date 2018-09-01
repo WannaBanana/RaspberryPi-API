@@ -1,4 +1,4 @@
-const logSystem = require('./logControl');
+const logSystem = require('../module/logControl');
 const rpio = require('rpio');
 const config = require('../ENV.json');
 
