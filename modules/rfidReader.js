@@ -1,11 +1,8 @@
 const rfid = require('mfrc522-rpi');
 const fs = require('fs');
 const logSystem = require('./logControl');
-const config = require('../ENV.json');
-const webcam = require('./webcamControl');
-const door = require('./doorControl');
 
-module.exports = function () {
+module.exports = function (door, webcam, config) {
 
     var module = {};
 
@@ -205,4 +202,4 @@ module.exports = function () {
     }
 
     return module;
-}();
+};
