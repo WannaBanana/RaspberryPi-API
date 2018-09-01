@@ -20,7 +20,7 @@ door.init();
 /* Server routing */
 
     /* 查詢門鎖狀態 */
-    app.get('/door', function(req, res) {
+    app.get('/', function(req, res) {
         let result = door.state();
         if (result) {
             res.status(200).send(result);
@@ -32,7 +32,7 @@ door.init();
     });
 
     /* 修改門鎖狀態 */
-    app.post('/door', function(req, res) {
+    app.post('/', function(req, res) {
         let requsetObject = req.body;
         if(requsetObject['method'] && (requsetObject['method'] != 'open' || requsetObject['method'] != 'close' || requsetObject['method'] != 'temp')) {
             if(requsetObject['method'] == 'temp') {
@@ -70,7 +70,7 @@ door.init();
     });
 
     /* 啟動電源 */
-    app.put('/door', function(req, res) {
+    app.put('/', function(req, res) {
         if(door.init()) {
             res.status(200).send({
                 "message": "門鎖裝置啟動成功"
@@ -83,7 +83,7 @@ door.init();
     });
 
     /* 更新門鎖狀態 */
-    app.patch('/door', function(req, res) {
+    app.patch('/', function(req, res) {
         let result = door.reload();
         if (result) {
             res.status(200).send(result);
@@ -95,7 +95,7 @@ door.init();
     });
 
     /* 關閉電源 */
-    app.delete('/door', function(req, res) {
+    app.delete('/', function(req, res) {
         if(door.terminate()) {
             res.status(200).send({
                 "message": "門鎖裝置關閉成功"
