@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./ENV.json');
-const rpio = require('rpio');
+const rpio = require('rpi-gpio');
 
 var app = express();
 
@@ -12,14 +12,12 @@ const log = new logSystem(config.main.logDirectory, 'api-system');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const webcam = require('./modules/webcamControl');
-const door = require('./modules/doorControl');
-const glass = require('./modules/glassDetect');
-const rfid = require('./modules/rfidReader');
+const webcam = require('./modules/webcamControl')(config);
+const door = require('./modules/doorControl')(rpio, config);
+const glass = require('./modules/glassDetect')(rpio, config);
+const rfid = require('./modules/rfidReader')(door, webcam, config);
 
 try {
-    // gpio以物理編號載入
-    rpio.init({mapping: 'physical'});
     // 門鎖初始化
     door.init();
     // 綁定 rfid 掃描
@@ -58,15 +56,10 @@ function gracefulShutdown() {
     } catch(err) {
         log.record('Server shutdown catch error <Error>: ' + err);
     }
-    // 檢查並終止GPIO
-    let gpioPin = [3,5,7,8,10,11,12,13,15,16,18,19,21,22,23,24,26,29,31,32,33,35,36,37,38,40];
-    for(let index in gpioPin) {
-        if(rpio.read(gpioPin[index]) == 1) {
-            rpio.write(gpioPin[index], 0);
-            rpio.close(gpioPin[index], rpio.PIN_PRESERVE);
-        }
-    }
-    log.record('Server GPIO cleanup');
+    // 終止GPIO
+    rpio.destroy(function() {
+        log.record('Server GPIO cleanup');
+    });
 
     console.log('[console] Received kill signal, shutting down gracefully.');
     server.close(function() {

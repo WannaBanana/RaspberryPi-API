@@ -1,8 +1,6 @@
 const logSystem = require('./logControl');
-const rpio = require('rpio');
-const config = require('../ENV.json');
 
-module.exports = function () {
+module.exports = function (rpio, config) {
 
     var module = {};
 
@@ -13,6 +11,56 @@ module.exports = function () {
     var lockState = false;
     // 門狀態, t開啟f關閉
     var doorState = false;
+
+    // 初始化PIN腳
+    rpio.setup(config.lock.powerPIN, rpio.DIR_OUT);
+    rpio.setup(config.lock.openPIN, rpio.DIR_OUT);
+
+/* 事件綁定 */
+
+    function _closeEvent() {
+        try {
+            _closeStatePush(false);
+            doorState = false;
+            return true;
+        } catch(err) {
+            log.record('door_close failed <Error>: ' + err);
+            return false;
+        }
+    }
+
+    function _openEvent() {
+        try {
+            _closeStatePush(true);
+            doorState = true;
+            return true;
+        } catch(err) {
+            log.record('door_open failed <Error>: ' + err);
+            return false;
+        }
+    }
+
+    function _pollEvent(channel, value) {
+        if(channel == config.lock.doorPIN) {
+            let temp = doorState;
+            doorState = (value ? true : false);
+            // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
+            if(temp == doorState) {
+                return;
+            }
+            if(doorState == true) {
+                _openEvent();
+            } else {
+                _closeEvent();
+            }
+        } else {
+            console.log('change ' + channel + ' to ' + value);
+        }
+    }
+
+    gpio.on('change', _pollEvent);
+
+    gpio.setup(config.lock.doorPIN, gpio.DIR_IN, gpio.EDGE_BOTH);
 
 /* 事件函式(訊息管理) Private */
 
@@ -59,10 +107,9 @@ module.exports = function () {
         }
         try {
             // 預設啟動電源上鎖, 不開啟
-            rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
-            rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
-            rpio.open(config.lock.doorPIN, rpio.INPUT);
-	    // 綁定開關門事件
+            rpio.write(config.lock.powerPIN, true);
+            rpio.write(config.lock.openPIN, false);
+            // 綁定開關門事件
             //rpio.poll(config.lock.doorPIN, _pollEvent);
             // 紀錄、更新電源狀態
             _reload();
@@ -79,10 +126,9 @@ module.exports = function () {
             return false;
         }
         try {
-            // 關閉GPIO, 避免訊號異常導致開門
-            rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
-            rpio.close(config.lock.openPIN, rpio.PIN_RESET);
-            rpio.close(config.lock.doorPIN, rpio.PIN_RESET);
+            // 關閉電源與開門訊號
+            rpio.write(config.lock.powerPIN, false);
+            rpio.write(config.lock.openPIN, false);
             // 更新電源狀態
             _reload();
             log.record('door_detach success');
@@ -91,6 +137,11 @@ module.exports = function () {
             log.record('door_detach failed <Error>: ' + err);
             return false;
         }
+    }
+
+    function checkOutput(err, value) {
+        if(err) throw err;
+        return value;
     }
 
     function _waiting(ms) {
@@ -106,24 +157,24 @@ module.exports = function () {
         try {
             switch(state) {
                 case 'open':
-                    rpio.write(config.lock.openPIN, rpio.HIGH);
+                    rpio.write(config.lock.powerPIN, true);
                     lockState = false;
                     _doorStatePush(true);
                     log.record('door_config open');
                     break;
                 case 'close':
-                    rpio.write(config.lock.openPIN, rpio.LOW);
+                    rpio.write(config.lock.powerPIN, false);
                     lockState = true;
                     _doorStatePush(false)
                     log.record('door_config close');
                     break;
                 case 'temp':
-                    rpio.write(config.lock.openPIN, rpio.HIGH);
+                    rpio.write(config.lock.powerPIN, true);
                     lockState = false;
                     _doorStatePush(true);
                     log.record('door_config open for ' + delay + ' ms');
                     _waiting(delay).then(() => {
-                        rpio.write(config.lock.openPIN, rpio.LOW);
+                        rpio.write(config.lock.powerPIN, false);
                         lockState = true;
                         _doorStatePush(false)
                         log.record('door_config close');
@@ -140,47 +191,11 @@ module.exports = function () {
         }
     }
 
-    function _closeEvent() {
-        try {
-            _closeStatePush(false);
-            doorState = false;
-            return true;
-        } catch(err) {
-            log.record('door_close failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _openEvent() {
-        try {
-            _closeStatePush(true);
-            doorState = true;
-            return true;
-        } catch(err) {
-            log.record('door_open failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _pollEvent() {
-        let temp = doorState;
-        doorState = (rpio.read(config.lock.doorPIN) ? true : false);
-        // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
-        if(temp == doorState) {
-            return;
-        }
-        if(doorState == true) {
-            _openEvent();
-        } else {
-            _closeEvent();
-        }
-    }
-
     function _reload() {
         try {
-            lockState = (rpio.read(config.lock.openPIN) ? false : true);
-            powerState = (rpio.read(config.lock.powerPIN) ? true : false);
-            doorState = (rpio.read(config.lock.doorPIN) ? true : false);
+            lockState = !(rpio.read(config.lock.openPIN, checkOutput));
+            powerState = rpio.read(config.lock.powerPIN, checkOutput);
+            doorState = rpio.read(config.lock.doorPIN, checkOutput);
             _doorPowerPush(powerState);
             _doorStatePush(lockState);
             _closeStatePush(doorState);
@@ -233,4 +248,4 @@ module.exports = function () {
     }
 
     return module;
-}();
+};
