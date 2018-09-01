@@ -1,12 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('../ENV.json');
-const logSystem = require('../module/logControl');
-const log = new logSystem(config.main.logDirectory, 'api-system-' + prefix);
 
 var app = express();
 const prefix = "DOOR";
 var door = require('./doorControl');
+const logSystem = require('../module/logControl');
+const log = new logSystem(config.main.logDirectory, 'api-system-' + prefix);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
