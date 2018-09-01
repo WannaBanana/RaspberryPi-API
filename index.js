@@ -36,6 +36,7 @@ app.use(function(req, res, next) {
     req.rfid = rfid;
     req.door = door;
     req.webcam = webcam;
+    req.glass = glass;
     req.log = log;
     next();
 });

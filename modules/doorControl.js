@@ -61,7 +61,7 @@ module.exports = function (rpio, config) {
             rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
             rpio.open(config.lock.doorPIN, rpio.INPUT);
             // 綁定開關門事件
-            rpio.poll(config.lock.doorPIN, _pollEvent);
+            //rpio.poll(config.lock.doorPIN, _pollEvent);
             // 紀錄、更新電源狀態
             _reload();
             log.record('door_attach success');
@@ -175,9 +175,6 @@ module.exports = function (rpio, config) {
     }
 
     function _reload() {
-        if(powerState == false) {
-            return false;
-        }
         try {
             lockState = (rpio.read(config.lock.openPIN) ? false : true);
             powerState = (rpio.read(config.lock.powerPIN) ? true : false);

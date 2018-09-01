@@ -50,9 +50,9 @@ module.exports = function(rpio, config){
             rpio.open(config.glass.casePIN, rpio.INPUT);
             rpio.open(config.glass.detectPIN, rpio.INPUT);
             // 綁定蓋子事件
-            rpio.poll(config.glass.casePIN, _glassCasePush, rpio.POLL_BOTH);
+            //rpio.poll(config.glass.casePIN, _glassCasePush, rpio.POLL_BOTH);
             // 綁定觸發事件
-            rpio.poll(config.glass.detectPIN, _glassDetectPush, rpio.POLL_HIGH);
+            //rpio.poll(config.glass.detectPIN, _glassDetectPush, rpio.POLL_HIGH);
             _reload();
             log.record('glass_attach success');
             return true;
@@ -81,9 +81,6 @@ module.exports = function(rpio, config){
     }
 
     function _reload() {
-        if(powerState == false) {
-            return false;
-        }
         try {
             powerState = (rpio.read(config.glass.powerPIN) ? false : true);
             caseState = (rpio.read(config.glass.casePIN) ? true : false);
