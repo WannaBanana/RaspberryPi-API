@@ -1,8 +1,6 @@
 const logSystem = require('../module/logControl');
-const rpio = require('rpio');
-const config = require('../ENV.json');
 
-module.exports = function () {
+module.exports = function (rpio, config) {
 
     var module = {};
 
@@ -52,6 +50,42 @@ module.exports = function () {
     }
 
 /* 作動函式(裝置管理) Private */
+
+    function _closeEvent() {
+        try {
+            _closeStatePush(false);
+            doorState = false;
+            return true;
+        } catch(err) {
+            log.record('door_close failed <Error>: ' + err);
+            return false;
+        }
+    }
+
+    function _openEvent() {
+        try {
+            _closeStatePush(true);
+            doorState = true;
+            return true;
+        } catch(err) {
+            log.record('door_open failed <Error>: ' + err);
+            return false;
+        }
+    }
+
+    function _pollEvent() {
+        let temp = doorState;
+        doorState = (rpio.read(config.lock.doorPIN) ? true : false);
+        // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
+        if(temp == doorState) {
+            return;
+        }
+        if(doorState == true) {
+            _openEvent();
+        } else {
+            _closeEvent();
+        }
+    }
 
     function _doorAttach() {
         if(powerState == true) {
@@ -140,46 +174,7 @@ module.exports = function () {
         }
     }
 
-    function _closeEvent() {
-        try {
-            _closeStatePush(false);
-            doorState = false;
-            return true;
-        } catch(err) {
-            log.record('door_close failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _openEvent() {
-        try {
-            _closeStatePush(true);
-            doorState = true;
-            return true;
-        } catch(err) {
-            log.record('door_open failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _pollEvent() {
-        let temp = doorState;
-        doorState = (rpio.read(config.lock.doorPIN) ? true : false);
-        // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
-        if(temp == doorState) {
-            return;
-        }
-        if(doorState == true) {
-            _openEvent();
-        } else {
-            _closeEvent();
-        }
-    }
-
     function _reload() {
-        if(powerState == false) {
-            return false;
-        }
         try {
             lockState = (rpio.read(config.lock.openPIN) ? false : true);
             powerState = (rpio.read(config.lock.powerPIN) ? true : false);
@@ -236,4 +231,4 @@ module.exports = function () {
     }
 
     return module;
-}();
+};

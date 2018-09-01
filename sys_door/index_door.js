@@ -1,12 +1,15 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const config = require('../ENV.json');
+var express = require('express');
+var bodyParser = require('body-parser');
+var rpio = require('rpio');
+var config = require('../ENV.json');
+
+rpio.init({mapping: 'physical', gpiomem: true});
 
 var app = express();
-const prefix = "DOOR";
-var door = require('./doorControl');
-const logSystem = require('../module/logControl');
-const log = new logSystem(config.main.logDirectory, 'api-system-' + prefix);
+var prefix = "DOOR";
+var door = require('./doorControl')(rpio, config);
+var logSystem = require('../module/logControl');
+var log = new logSystem(config.main.logDirectory, 'api-system-' + prefix);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -107,8 +110,8 @@ door.init();
 
     function gracefulShutdown() {
         try {
-            // 終止 rfid 掃描
-            rfid.terminate();
+            // 結束門鎖gpio
+            door.terminate();
         } catch(err) {
             log.record('[' + prefix + '] Server shutdown catch error <Error>: ' + err);
         }
@@ -148,7 +151,7 @@ door.init();
         gracefulShutdown();
     });
 
-var server = app.listen(config.rfid.port || 8002, function() {
+var server = app.listen(config.lock.port || 8002, function() {
     var port = server.address().port;
     log.record('[' + prefix + '] System running at port ' + port);
 });
