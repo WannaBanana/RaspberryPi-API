@@ -1,4 +1,5 @@
 const logSystem = require('./logControl');
+const gpio = require('rpi-gpio');
 
 module.exports = function (rpio, config) {
 
@@ -11,6 +12,9 @@ module.exports = function (rpio, config) {
     var lockState = false;
     // 門狀態, t開啟f關閉
     var doorState = false;
+
+    // gpio.setup(35, gpio.DIR_IN, gpio.EDGE_BOTH);
+    // gpio.setup(33, gpio.DIR_IN, gpio.EDGE_BOTH);
 
 /* 事件函式(訊息管理) Private */
 
@@ -49,6 +53,32 @@ module.exports = function (rpio, config) {
         }
     }
 
+/* 設定GPIO監聽事件 */
+
+gpio.on('change', function(channel, value) {
+    switch(channel) {
+        case 37:
+            let temp = doorState;
+            doorState = (rpio.read(config.lock.doorPIN) ? true : false);
+            // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
+            if(temp == doorState) {
+                return;
+            }
+            if(doorState == true) {
+                _closeStatePush(true);
+                doorState = true;
+            } else {
+                _closeStatePush(false);
+                doorState = false;
+            }
+            return;
+        default:
+            return;
+    }
+});
+
+gpio.setup(37, gpio.DIR_IN, gpio.EDGE_BOTH);
+
 /* 作動函式(裝置管理) Private */
 
     function _doorAttach() {
@@ -59,7 +89,6 @@ module.exports = function (rpio, config) {
             // 預設啟動電源上鎖, 不開啟
             rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
             rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
-            rpio.open(config.lock.doorPIN, rpio.INPUT);
             // 綁定開關門事件
             //rpio.poll(config.lock.doorPIN, _pollEvent);
             // 紀錄、更新電源狀態
@@ -80,7 +109,9 @@ module.exports = function (rpio, config) {
             // 關閉GPIO, 避免訊號異常導致開門
             rpio.close(config.lock.powerPIN, rpio.PIN_RESET);
             rpio.close(config.lock.openPIN, rpio.PIN_RESET);
-            rpio.close(config.lock.doorPIN, rpio.PIN_RESET);
+            gpio.destroy(function() {
+                console.log('All pins unexported');
+            });
             // 更新電源狀態
             _reload();
             log.record('door_detach success');
@@ -135,42 +166,6 @@ module.exports = function (rpio, config) {
         } catch(err) {
             log.record('door_config failed <Error>: ' + err);
             return false;
-        }
-    }
-
-    function _closeEvent() {
-        try {
-            _closeStatePush(false);
-            doorState = false;
-            return true;
-        } catch(err) {
-            log.record('door_close failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _openEvent() {
-        try {
-            _closeStatePush(true);
-            doorState = true;
-            return true;
-        } catch(err) {
-            log.record('door_open failed <Error>: ' + err);
-            return false;
-        }
-    }
-
-    function _pollEvent() {
-        let temp = doorState;
-        doorState = (rpio.read(config.lock.doorPIN) ? true : false);
-        // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
-        if(temp == doorState) {
-            return;
-        }
-        if(doorState == true) {
-            _openEvent();
-        } else {
-            _closeEvent();
         }
     }
 
