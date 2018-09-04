@@ -13,9 +13,6 @@ module.exports = function (rpio, config) {
     // 門狀態, t開啟f關閉
     var doorState = false;
 
-    // gpio.setup(35, gpio.DIR_IN, gpio.EDGE_BOTH);
-    // gpio.setup(33, gpio.DIR_IN, gpio.EDGE_BOTH);
-
 /* 事件函式(訊息管理) Private */
 
     // 電源狀態通知
@@ -55,29 +52,29 @@ module.exports = function (rpio, config) {
 
 /* 設定GPIO監聽事件 */
 
-gpio.on('change', function(channel, value) {
-    switch(channel) {
-        case 37:
-            let temp = doorState;
-            doorState = (rpio.read(config.lock.doorPIN) ? true : false);
-            // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
-            if(temp == doorState) {
+    gpio.on('change', function(channel, value) {
+        switch(channel) {
+            case 37:
+                let temp = doorState;
+                doorState = (rpio.read(config.lock.doorPIN) ? true : false);
+                // 若GPIO快速發出兩次訊號, 比對門的狀態避免發送兩次訊息
+                if(temp == doorState) {
+                    return;
+                }
+                if(doorState == true) {
+                    _closeStatePush(true);
+                    doorState = true;
+                } else {
+                    _closeStatePush(false);
+                    doorState = false;
+                }
                 return;
-            }
-            if(doorState == true) {
-                _closeStatePush(true);
-                doorState = true;
-            } else {
-                _closeStatePush(false);
-                doorState = false;
-            }
-            return;
-        default:
-            return;
-    }
-});
+            default:
+                return;
+        }
+    });
 
-gpio.setup(37, gpio.DIR_IN, gpio.EDGE_BOTH);
+    gpio.setup(37, gpio.DIR_IN, gpio.EDGE_BOTH);
 
 /* 作動函式(裝置管理) Private */
 
