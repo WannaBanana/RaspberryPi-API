@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
 
+/* 獲取狀態 */
+router.get('/rfid', function(req, res) {
+    let state = req.rfid.getState()
+    if(state) {
+        res.status(200).send({
+            "state": state
+        });
+    } else {
+        res.status(500).send({
+            "message": "RFID獲取狀態失敗"
+        });
+    }
+});
+
 /* 啟用讀取 */
 router.put('/rfid', function(req, res) {
     if(req.rfid.init()) {
@@ -14,6 +28,8 @@ router.put('/rfid', function(req, res) {
     }
 });
 
+
+/* 重新載入 */
 router.patch('/rfid', function(req, res) {
     if(req.rfid.jsonReload()) {
         res.status(200).send({
