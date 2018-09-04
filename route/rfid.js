@@ -14,6 +14,18 @@ router.put('/rfid', function(req, res) {
     }
 });
 
+router.patch('/rfid', function(req, res) {
+    if(req.rfid.jsonReload()) {
+        res.status(200).send({
+            "message": "RFID重新載入成功"
+        });
+    } else {
+        res.status(500).send({
+            "message": "RFID重新載入失敗"
+        });
+    }
+});
+
 /* 停用讀取 */
 router.delete('/rfid', function(req, res) {
     if(req.rfid.terminate()) {
