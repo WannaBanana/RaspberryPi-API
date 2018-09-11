@@ -1,14 +1,17 @@
 const logSystem = require('./logControl');
 
-module.exports = function(rpio, config){
+module.exports = function(rpio, config, database){
 
     var module = {}
 
     var log = new logSystem(config.main.logDirectory, 'glassDetect');
+    var ref = database.ref('/space/' + config.main.collage + '/' + config.main.spaceCode + '/equipment/glassDetect');
+    var alert_ref = database.ref('/alert');
 
     var powerState = false;
 
     var caseState = false;
+    var caseEventNoticeID = undefined;
 
 /* 事件函式(訊息管理) Private */
 
@@ -16,15 +19,25 @@ module.exports = function(rpio, config){
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
             console.log('Power ON');
+            ref.child('power').set('啟動');
         } else {
             // 電源關閉, 推到Line, 更新firebase
             console.log('Power OFF');
+            ref.child('power').set('關閉');
         }
     }
 
     function _glassDetectPush() {
         // 觸發警告, 推到Line, 記錄到firebase
         console.log('Glass crack detect');
+        alert_ref.push({
+            "type": "警報",
+            "event": "玻璃感應器",
+            "describe": "偵測到玻璃破碎",
+            "state": "未處理",
+            "time": new Date().toISOString(),
+            "source": config.main.collage + config.main.spaceCode
+        });
     }
 
     function _glassCasePush() {
@@ -32,9 +45,20 @@ module.exports = function(rpio, config){
         if(caseState == true) {
             // 盒子開啟, 推到Line, 記錄到firebase
             console.log('case ON');
+            alert_ref.push({
+                "type": "警告",
+                "event": "玻璃感應器",
+                "describe": "偵測到玻璃感應器被拆開",
+                "state": "未處理",
+                "time": new Date().toISOString(),
+                "source": config.main.collage + config.main.spaceCode
+            }).then((snapshot) => {
+                caseEventNoticeID = snapshot.key;
+            });
         } else {
-            // 盒子關閉, 推到Line, 記錄到firebase
-            console.log('case OFF');
+            if(caseEventNoticeID) {
+                alert_ref.child(caseEventNoticeID).child('state').set('已處理');
+            }
         }
     }
 
