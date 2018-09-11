@@ -1,7 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./ENV.json');
+const key = require('./firebasePSK.json')
+const admin = require("firebase-admin");
 const rpio = require('rpio');
+
+// 初始化 firebase 服務
+admin.initializeApp({
+    credential: admin.credential.cert(key),
+    databaseURL: "https://ncnusmartschool.firebaseio.com",
+    databaseAuthVariableOverride: {
+        uid: config.main.firebase_uid
+    }
+});
+
+const database = admin.database();
+const ref = database.ref("space/" + config.main.collage + "/" + config.main.spaceCode + "/service");
 
 var app = express();
 
@@ -68,6 +82,8 @@ function gracefulShutdown() {
     }
     log.record('Server GPIO cleanup');
 
+    ref.set('關閉');
+
     console.log('[console] Received kill signal, shutting down gracefully.');
     server.close(function() {
         console.log('[console] Closed out remaining connections.');
@@ -103,5 +119,6 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(config.main.port || 8080, function() {
     var port = server.address().port;
+    ref.set('啟動');
     log.record('System running at port ' + port);
 });
