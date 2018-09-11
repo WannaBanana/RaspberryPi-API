@@ -8,14 +8,14 @@ const rpio = require('rpio');
 // 初始化 firebase 服務
 admin.initializeApp({
     credential: admin.credential.cert(key),
-    databaseURL: "https://ncnusmartschool.firebaseio.com",
+    databaseURL: 'https://ncnusmartschool.firebaseio.com',
     databaseAuthVariableOverride: {
         uid: config.main.firebase_uid
     }
 });
 
 const database = admin.database();
-const ref = database.ref("space/" + config.main.collage + "/" + config.main.spaceCode + "/service");
+const ref = database.ref('/space/' + config.main.collage + '/' + config.main.spaceCode + '/service');
 
 var app = express();
 
@@ -27,9 +27,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const webcam = require('./modules/webcamControl')(config);
-const door = require('./modules/doorControl')(rpio, config);
-const glass = require('./modules/glassDetect')(rpio, config);
-const rfid = require('./modules/rfidReader')(door, webcam, config);
+const door = require('./modules/doorControl')(rpio, config, database);
+const glass = require('./modules/glassDetect')(rpio, config, database);
+const rfid = require('./modules/rfidReader')(door, webcam, config, database);
 
 try {
     // gpio以物理編號載入

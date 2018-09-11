@@ -2,7 +2,7 @@ const rfid = require('mfrc522-rpi');
 const fs = require('fs');
 const logSystem = require('./logControl');
 
-module.exports = function (door, webcam, config) {
+module.exports = function (door, webcam, config, database) {
 
     var module = {};
 
@@ -11,6 +11,8 @@ module.exports = function (door, webcam, config) {
     var userData = JSON.parse(fs.readFileSync('./offlineData/user.json', 'utf8'));
     // 載入檔案紀錄系統
     var log = new logSystem(config.main.logDirectory, 'rfid');
+    var ref = database.ref('/space/' + config.main.collage + '/' + config.main.spaceCode + '/equipment/rfid');
+    var alert_ref = database.ref('/alert');
     // 儲存 setTimeout 事件
     var timer;
     // 紀錄失敗次數
@@ -52,14 +54,24 @@ module.exports = function (door, webcam, config) {
         if(state == true) {
             // 讀取啟動, 推到Line, 更新firebase
             console.log('Read ON');
+            ref.child('state').set('啟動');
         } else {
             // 讀取關閉, 推到Line, 更新firebase
             console.log('Read OFF');
+            ref.child('state').set('關閉');
         }
     }
 
     function _verifyNoticePush(id, photoSrc) {
         console.log('verify more than 3 times');
+        alert_ref.push({
+            "type": "警告",
+            "event": "RFID",
+            "describe": "卡片編號: " + id + " 驗證失敗三次",
+            "state": "未處理",
+            "time": new Date().toISOString(),
+            "source": config.main.collage + config.main.spaceCode
+        });
         // 記錄到 firebase
         // 推到 line
     }
