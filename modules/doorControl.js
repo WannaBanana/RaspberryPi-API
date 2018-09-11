@@ -1,10 +1,11 @@
 const logSystem = require('./logControl');
 
-module.exports = function (rpio, config) {
+module.exports = function (rpio, config, database) {
 
     var module = {};
 
     var log = new logSystem(config.main.logDirectory, 'doorControl');
+    var ref = database.ref('/space/' + config.main.collage + '/' + config.main.spaceCode + '/equipment/doorLock')
     // 電源狀態, t開f關
     var powerState = false;
     // 門鎖狀態, t關f開 (lock = true為上鎖)
@@ -19,9 +20,11 @@ module.exports = function (rpio, config) {
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
             console.log('Power ON');
+            ref.child('power').set('啟動');
         } else {
             // 電源關閉, 推到Line, 更新firebase
             console.log('Power OFF');
+            ref.child('power').set('關閉');
         }
     }
 
@@ -31,9 +34,11 @@ module.exports = function (rpio, config) {
         if(state == false) {
             // 門鎖打開, 推到Line, 更新firebase
             console.log('LOCK ON');
+            ref.child('lock').set('解鎖');
         } else {
             // 門鎖關閉, 推到Line, 更新firebase
             console.log('LOCK OFF');
+            ref.child('lock').set('上鎖');
         }
     }
 
@@ -43,9 +48,11 @@ module.exports = function (rpio, config) {
         if(state == true) {
             // 門開啟, 推到Line, 更新firebase
             console.log('DOOR ON');
+            ref.child('door').set('開啟');
         } else {
             // 門關閉, 推到Line, 更新firebase
             console.log('DOOR OFF');
+            ref.child('door').set('關閉');
         }
     }
 
