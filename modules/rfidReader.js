@@ -2,7 +2,7 @@ const rfid = require('mfrc522-rpi');
 const fs = require('fs');
 const logSystem = require('./logControl');
 
-module.exports = function (door, webcam, config) {
+module.exports = function (door, webcam, config, database) {
 
     var module = {};
 
@@ -12,6 +12,8 @@ module.exports = function (door, webcam, config) {
     var setting = JSON.parse(fs.readFileSync('./offlineData/rfidSetting.json', 'utf8'));
     // 載入檔案紀錄系統
     var log = new logSystem(config.main.logDirectory, 'rfid');
+    var ref = database.ref('/space/' + config.main.college + '/' + config.main.spaceCode + '/equipment/rfid');
+    var alert_ref = database.ref('/alert');
     // 儲存 setTimeout 事件
     var timer;
     // 紀錄失敗次數
@@ -53,9 +55,11 @@ module.exports = function (door, webcam, config) {
         if(state == true) {
             // 讀取啟動, 推到Line, 更新firebase
             console.log('Read ON');
+            ref.update({'state': '啟動'});
         } else {
             // 讀取關閉, 推到Line, 更新firebase
             console.log('Read OFF');
+            ref.update({'state': '關閉'});
         }
     }
 
@@ -64,7 +68,15 @@ module.exports = function (door, webcam, config) {
     }
 
     function _verifyNoticePush(id, photoSrc) {
-        console.log('verify error more than 3 times ID:' + id + ' src:' + photoSrc);
+        console.log('verify more than 3 times');
+        alert_ref.push({
+            "type": "警告",
+            "event": "RFID",
+            "describe": "卡片編號: " + id + " 驗證失敗三次",
+            "state": "未處理",
+            "time": new Date().toISOString(),
+            "source": config.main.college + config.main.spaceCode
+        });
         // 記錄到 firebase
         // 推到 line
     }
@@ -191,7 +203,7 @@ module.exports = function (door, webcam, config) {
             try {
                 timer = setInterval(_read, 1000);
                 rfidState = true;
-                _rfidStatePush(rfidState);
+                _rfidStatePush(true);
                 log.record('rfid_attach success')
                 return true;
             } catch(err) {
@@ -208,7 +220,7 @@ module.exports = function (door, webcam, config) {
             try {
                 clearTimeout(timer);
                 rfidState = false;
-                _rfidStatePush(rfidState);
+                _rfidStatePush(false);
                 log.record('rfid_detach success')
                 return true;
             } catch(err) {

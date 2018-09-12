@@ -1,7 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./ENV.json');
+const key = require('./servicePrivateKey.json')
+const admin = require("firebase-admin");
 const rpio = require('rpio');
+
+// 初始化 firebase 服務
+admin.initializeApp({
+    credential: admin.credential.cert(key),
+    databaseURL: 'https://ncnusmartschool.firebaseio.com',
+    databaseAuthVariableOverride: {
+        uid: config.main.firebase_uid
+    }
+});
+
+const database = admin.database();
+var ref = database.ref('/space/' + config.main.college + '/' + config.main.spaceCode);
 
 var app = express();
 
@@ -13,9 +27,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const webcam = require('./modules/webcamControl')(config);
-const door = require('./modules/doorControl')(rpio, config);
-const glass = require('./modules/glassDetect')(rpio, config);
-const rfid = require('./modules/rfidReader')(door, webcam, config);
+const door = require('./modules/doorControl')(rpio, config, database);
+const glass = require('./modules/glassDetect')(rpio, config, database);
+const rfid = require('./modules/rfidReader')(door, webcam, config, database);
 
 try {
     // gpio以物理編號載入
@@ -66,13 +80,18 @@ function gracefulShutdown() {
             rpio.close(gpioPin[index], rpio.PIN_PRESERVE);
         }
     }
-    log.record('Server GPIO cleanup');
 
-    console.log('[console] Received kill signal, shutting down gracefully.');
-    server.close(function() {
-        console.log('[console] Closed out remaining connections.');
-        process.exit();
-    });
+    log.record('Server GPIO cleanup');
+    ref.update({ 'service': '關閉'});
+
+    console.log('[console] Received kill signal, shutting down gracefully in 5 seconds.');
+
+    setTimeout(function() {
+        server.close(function() {
+            console.log('[console] Closed out remaining connections.');
+            process.exit();
+        });
+    }, 5*1000);
 
      // if after
      setTimeout(function() {
@@ -103,5 +122,6 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(config.main.port || 8080, function() {
     var port = server.address().port;
+    ref.update({ 'service': '啟動'});
     log.record('System running at port ' + port);
 });

@@ -1,11 +1,12 @@
 const logSystem = require('./logControl');
 const gpio = require('rpi-gpio');
 
-module.exports = function (rpio, config) {
+module.exports = function (rpio, config, database) {
 
     var module = {};
 
     var log = new logSystem(config.main.logDirectory, 'doorControl');
+    var ref = database.ref('/space/' + config.main.college + '/' + config.main.spaceCode + '/equipment/doorLock')
     // 電源狀態, t開f關
     var powerState = false;
     // 門鎖狀態, t關f開 (lock = true為上鎖)
@@ -20,9 +21,11 @@ module.exports = function (rpio, config) {
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
             console.log('Power ON');
+            ref.update({'power': '啟動'});
         } else {
             // 電源關閉, 推到Line, 更新firebase
             console.log('Power OFF');
+            ref.update({'power': '關閉'});
         }
     }
 
@@ -32,9 +35,11 @@ module.exports = function (rpio, config) {
         if(state == false) {
             // 門鎖打開, 推到Line, 更新firebase
             console.log('LOCK ON');
+            ref.update({'lock': '解鎖'});
         } else {
             // 門鎖關閉, 推到Line, 更新firebase
             console.log('LOCK OFF');
+            ref.update({'lock': '上鎖'});
         }
     }
 
@@ -44,9 +49,11 @@ module.exports = function (rpio, config) {
         if(state == true) {
             // 門開啟, 推到Line, 更新firebase
             console.log('DOOR ON');
+            ref.update({'door': '開啟'});
         } else {
             // 門關閉, 推到Line, 更新firebase
             console.log('DOOR OFF');
+            ref.update({'door': '關閉'});
         }
     }
 
@@ -86,8 +93,6 @@ module.exports = function (rpio, config) {
             // 預設啟動電源上鎖, 不開啟
             rpio.open(config.lock.powerPIN, rpio.OUTPUT, rpio.HIGH);
             rpio.open(config.lock.openPIN, rpio.OUTPUT, rpio.LOW);
-            // 綁定開關門事件
-            //rpio.poll(config.lock.doorPIN, _pollEvent);
             // 紀錄、更新電源狀態
             _reload();
             log.record('door_attach success');
@@ -134,24 +139,24 @@ module.exports = function (rpio, config) {
                 case 'open':
                     rpio.write(config.lock.openPIN, rpio.HIGH);
                     lockState = false;
-                    _doorStatePush(true);
+                    _doorStatePush(false);
                     log.record('door_config open');
                     break;
                 case 'close':
                     rpio.write(config.lock.openPIN, rpio.LOW);
                     lockState = true;
-                    _doorStatePush(false)
+                    _doorStatePush(true)
                     log.record('door_config close');
                     break;
                 case 'temp':
                     rpio.write(config.lock.openPIN, rpio.HIGH);
                     lockState = false;
-                    _doorStatePush(true);
+                    _doorStatePush(false);
                     log.record('door_config open for ' + delay + ' ms');
                     _waiting(delay).then(() => {
                         rpio.write(config.lock.openPIN, rpio.LOW);
                         lockState = true;
-                        _doorStatePush(false)
+                        _doorStatePush(true)
                         log.record('door_config close');
                     });
                     break;
