@@ -258,6 +258,7 @@ module.exports = function (door, webcam, config, database) {
         _rfidDetach();
         _reload();
         _rfidAttach();
+	return true;
     }
 
     return module;

@@ -59,6 +59,7 @@ const routeRfid = require('./route/rfid');
 const routeGlass = require('./route/glass');
 
 app.use('/', [routeDoor, routeGlass, routeRfid]);
+app.use('/log', express.static('/var/log/RaspberryPi-API'));
 
 // 系統終止事件函式
 function gracefulShutdown() {
