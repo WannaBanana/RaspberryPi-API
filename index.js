@@ -62,13 +62,6 @@ const routeRfid = require('./route/rfid');
 const routeGlass = require('./route/glass');
 
 app.use('/', [routeDoor, routeGlass, routeRfid]);
-app.use(express.static('/var/log/raspberry'));
-app.use('/log/api-system', express.static(__dirname + '/api-system'));
-app.use('/log/doorControl', express.static(__dirname + '/doorControl'));
-app.use('/log/glassDetect', express.static(__dirname + '/glassDetect'));
-app.use('/log/rfid', express.static(__dirname + '/rfid'));
-app.use('/log/webcam', express.static(__dirname + '/webcam'));
-
 
 // 系統終止事件函式
 function gracefulShutdown() {
