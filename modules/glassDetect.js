@@ -43,7 +43,7 @@ module.exports = function(rpio, config, database){
 
     function _glassCasePush() {
         caseState = (rpio.read(config.glass.casePIN) ? true : false);
-        if(caseState == true) {
+        if(caseState == false) {
             // 盒子開啟, 推到Line, 記錄到firebase
             console.log('case ON');
             alert_ref.push({
