@@ -4,6 +4,8 @@ const config = require('./ENV.json');
 const key = require('./servicePrivateKey.json')
 const admin = require("firebase-admin");
 const rpio = require('rpio');
+const os = require('os');
+const ipAddr = os.networkInterfaces()['eth0'][0].address;
 
 // 初始化 firebase 服務
 admin.initializeApp({
@@ -16,6 +18,7 @@ admin.initializeApp({
 
 const database = admin.database();
 var ref = database.ref('/space/' + config.main.college + '/' + config.main.spaceCode);
+ref.update({ 'address': ipAddr });
 
 var app = express();
 
@@ -59,7 +62,13 @@ const routeRfid = require('./route/rfid');
 const routeGlass = require('./route/glass');
 
 app.use('/', [routeDoor, routeGlass, routeRfid]);
-app.use('/log', express.static('/var/log/RaspberryPi-API'));
+app.use(express.static('/var/log/raspberry'));
+app.use('/log/api-system', express.static(__dirname + '/api-system'));
+app.use('/log/doorControl', express.static(__dirname + '/doorControl'));
+app.use('/log/glassDetect', express.static(__dirname + '/glassDetect'));
+app.use('/log/rfid', express.static(__dirname + '/rfid'));
+app.use('/log/webcam', express.static(__dirname + '/webcam'));
+
 
 // 系統終止事件函式
 function gracefulShutdown() {
