@@ -30,7 +30,7 @@ module.exports = function(rpio, config, database){
                 body:
                 {   department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '玻璃感應器電源啟動' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 玻璃感應器電源啟動' } },
                 json: true
             };
 
@@ -49,7 +49,7 @@ module.exports = function(rpio, config, database){
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '玻璃感應器電源關閉' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 玻璃感應器電源關閉' } },
                 json: true
             };
 
@@ -144,7 +144,7 @@ module.exports = function(rpio, config, database){
                                 "data": "report&" + snapshot.key
                                 }
                             ],
-                            "title": "警報",
+                            "title": "警告",
                             "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString()
                             }
                         }
@@ -169,7 +169,7 @@ module.exports = function(rpio, config, database){
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '玻璃感應器外殼已正確闔上' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 玻璃感應器外殼已正確闔上' } },
                 json: true
             };
 

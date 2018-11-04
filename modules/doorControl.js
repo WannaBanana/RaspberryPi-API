@@ -31,7 +31,7 @@ module.exports = function (rpio, config, database) {
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '門鎖電源啟動' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 門鎖電源啟動' } },
                 json: true
             };
 
@@ -50,7 +50,7 @@ module.exports = function (rpio, config, database) {
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '門鎖電源關閉' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 門鎖電源關閉' } },
                 json: true
             };
 
@@ -75,7 +75,7 @@ module.exports = function (rpio, config, database) {
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '門鎖解鎖' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 門鎖解鎖' } },
                 json: true
             };
 
@@ -94,7 +94,7 @@ module.exports = function (rpio, config, database) {
                 body:
                 { department: config.main.college,
                     space: config.main.spaceCode,
-                    message: { type: 'text', text: '門鎖上鎖' } },
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 門鎖上鎖' } },
                 json: true
             };
 
@@ -111,10 +111,40 @@ module.exports = function (rpio, config, database) {
             // 門開啟, 推到Line, 更新firebase
             console.log('DOOR ON');
             ref.update({'door': '開啟'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 開啟中' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         } else {
             // 門關閉, 推到Line, 更新firebase
             console.log('DOOR OFF');
             ref.update({'door': '關閉'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: config.main.college + ' ' + config.main.spaceCode + ' 關閉中' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
