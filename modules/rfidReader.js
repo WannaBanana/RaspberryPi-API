@@ -56,10 +56,40 @@ module.exports = function (door, webcam, config, database) {
             // 讀取啟動, 推到Line, 更新firebase
             console.log('Read ON');
             ref.update({'state': '啟動'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: 'RFID電源開啟' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         } else {
             // 讀取關閉, 推到Line, 更新firebase
             console.log('Read OFF');
             ref.update({'state': '關閉'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: 'RFID電源關閉' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
