@@ -1,5 +1,6 @@
 const logSystem = require('./logControl');
 const gpio = require('rpi-gpio');
+var request =require('request');
 
 module.exports = function (rpio, config, database) {
 

@@ -1,6 +1,7 @@
 const rfid = require('mfrc522-rpi');
 const fs = require('fs');
 const logSystem = require('./logControl');
+var request =require('request');
 
 module.exports = function (door, webcam, config, database) {
 
