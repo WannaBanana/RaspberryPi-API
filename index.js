@@ -4,7 +4,6 @@ const config = require('./ENV.json');
 const key = require('./servicePrivateKey.json')
 const admin = require("firebase-admin");
 const rpio = require('rpio');
-const Stream = require('node-rtsp-stream');
 const os = require('os');
 const ipAddr = os.networkInterfaces()['eth0'][0].address;
 
@@ -15,12 +14,6 @@ admin.initializeApp({
     databaseAuthVariableOverride: {
         uid: config.main.firebase_uid
     }
-});
-
-stream = new Stream({
-	    name: config.main.college + config.main.space,
-	    streamUrl: 'rtsp://' + ipAddr + ':8555/unicast',
-	    wsPort: 9999
 });
 
 const database = admin.database();
