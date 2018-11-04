@@ -22,10 +22,40 @@ module.exports = function (rpio, config, database) {
             // 電源啟動, 推到Line, 更新firebase
             console.log('Power ON');
             ref.update({'power': '啟動'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '門鎖電源啟動' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         } else {
             // 電源關閉, 推到Line, 更新firebase
             console.log('Power OFF');
             ref.update({'power': '關閉'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '門鎖電源關閉' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
@@ -36,10 +66,40 @@ module.exports = function (rpio, config, database) {
             // 門鎖打開, 推到Line, 更新firebase
             console.log('LOCK ON');
             ref.update({'lock': '解鎖'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '門鎖解鎖' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         } else {
             // 門鎖關閉, 推到Line, 更新firebase
             console.log('LOCK OFF');
             ref.update({'lock': '上鎖'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '門鎖上鎖' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
