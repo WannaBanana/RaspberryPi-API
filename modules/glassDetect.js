@@ -1,5 +1,6 @@
 const logSystem = require('./logControl');
 const gpio = require('rpi-gpio');
+const request = require('request');
 
 module.exports = function(rpio, config, database){
 
@@ -21,28 +22,235 @@ module.exports = function(rpio, config, database){
             // 電源啟動, 推到Line, 更新firebase
             console.log('Power ON');
             ref.update({'power': '啟動'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '玻璃感應器電源啟動' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         } else {
             // 電源關閉, 推到Line, 更新firebase
             console.log('Power OFF');
             ref.update({'power': '關閉'});
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '玻璃感應器電源關閉' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
     function _glassDetectPush() {
         // 觸發警告, 推到Line, 記錄到firebase
         console.log('Glass crack detect');
+        let currentTime = new Date().toISOString()
         alert_ref.push({
             "type": "警報",
             "event": "玻璃感應器",
             "describe": "偵測到玻璃破碎",
             "state": "未處理",
-            "time": new Date().toISOString(),
+            "time": currentTime,
             "source": config.main.college + config.main.spaceCode
+        });
+        var options = { method: 'POST',
+            url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+            headers:
+            { 'Content-Type': 'application/json' },
+            body:
+            { department: config.main.college,
+                space: config.main.spaceCode,
+                message:
+                {
+                    "type": "flex",
+                    "altText": "請使用手機接收本訊息",
+                    "contents": {
+                      "type": "bubble",
+                      "hero": {
+                        "type": "image",
+                        "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/01_3_movie.png",
+                        "size": "full",
+                        "aspectRatio": "20:13",
+                        "aspectMode": "cover",
+                        "action": {
+                          "type": "uri",
+                          "label": "Action",
+                          "uri": "https://linecorp.com/"
+                        }
+                      },
+                      "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "md",
+                        "contents": [
+                          {
+                            "type": "text",
+                            "text": "警告",
+                            "size": "xl",
+                            "gravity": "center",
+                            "weight": "bold",
+                            "wrap": true
+                          },
+                          {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "margin": "lg",
+                            "contents": [
+                              {
+                                "type": "box",
+                                "layout": "baseline",
+                                "spacing": "sm",
+                                "contents": [
+                                  {
+                                    "type": "text",
+                                    "text": "時間",
+                                    "flex": 1,
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "text": currentTime,
+                                    "flex": 4,
+                                    "size": "sm",
+                                    "color": "#666666",
+                                    "wrap": true
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "box",
+                                "layout": "baseline",
+                                "spacing": "sm",
+                                "contents": [
+                                  {
+                                    "type": "text",
+                                    "text": "地點",
+                                    "flex": 1,
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "text": config.main.college + ' ' + config.main.spaceCode,
+                                    "flex": 4,
+                                    "size": "sm",
+                                    "color": "#666666",
+                                    "wrap": true
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "box",
+                                "layout": "baseline",
+                                "spacing": "sm",
+                                "contents": [
+                                  {
+                                    "type": "text",
+                                    "text": "事件",
+                                    "flex": 1,
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "text": "玻璃感應器",
+                                    "flex": 4,
+                                    "size": "sm",
+                                    "color": "#666666",
+                                    "wrap": true
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "box",
+                                "layout": "baseline",
+                                "contents": [
+                                  {
+                                    "type": "text",
+                                    "text": "描述",
+                                    "flex": 1,
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "text": "偵測到玻璃破碎",
+                                    "flex": 4,
+                                    "size": "sm",
+                                    "color": "#666666"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "box",
+                                "layout": "baseline",
+                                "contents": [
+                                  {
+                                    "type": "text",
+                                    "text": "狀態",
+                                    "flex": 1,
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "text": "未處理",
+                                    "flex": 4,
+                                    "size": "sm",
+                                    "color": "#666666"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "button",
+                                "action": {
+                                  "type": "postback",
+                                  "label": "已處理",
+                                  "text": "已經回報狀態囉！",
+                                  "data": "report&{ID}"
+                                },
+                                "color": "#17D859",
+                                "margin": "sm",
+                                "gravity": "center"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                },
+            },
+            json: true
+        };
+
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
         });
     }
 
     function _glassCasePush() {
         caseState = (rpio.read(config.glass.casePIN) ? true : false);
+        let currentTime = new Date().toISOString()
         if(caseState == false) {
             // 盒子開啟, 推到Line, 記錄到firebase
             console.log('case ON');
@@ -51,10 +259,185 @@ module.exports = function(rpio, config, database){
                 "event": "玻璃感應器",
                 "describe": "偵測到玻璃感應器被拆開",
                 "state": "未處理",
-                "time": new Date().toISOString(),
+                "time": currentTime,
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
                 caseEventNoticeID = snapshot.key;
+            });
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message:
+                    {
+                        "type": "flex",
+                        "altText": "請使用手機接收本訊息",
+                        "contents": {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/01_3_movie.png",
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover",
+                            "action": {
+                            "type": "uri",
+                            "label": "Action",
+                            "uri": "https://linecorp.com/"
+                            }
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "md",
+                            "contents": [
+                            {
+                                "type": "text",
+                                "text": "警告",
+                                "size": "xl",
+                                "gravity": "center",
+                                "weight": "bold",
+                                "wrap": true
+                            },
+                            {
+                                "type": "box",
+                                "layout": "vertical",
+                                "spacing": "sm",
+                                "margin": "lg",
+                                "contents": [
+                                {
+                                    "type": "box",
+                                    "layout": "baseline",
+                                    "spacing": "sm",
+                                    "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "時間",
+                                        "flex": 1,
+                                        "size": "sm",
+                                        "color": "#AAAAAA"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": currentTime,
+                                        "flex": 4,
+                                        "size": "sm",
+                                        "color": "#666666",
+                                        "wrap": true
+                                    }
+                                    ]
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "baseline",
+                                    "spacing": "sm",
+                                    "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "地點",
+                                        "flex": 1,
+                                        "size": "sm",
+                                        "color": "#AAAAAA"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": config.main.college + ' ' + config.main.spaceCode,
+                                        "flex": 4,
+                                        "size": "sm",
+                                        "color": "#666666",
+                                        "wrap": true
+                                    }
+                                    ]
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "baseline",
+                                    "spacing": "sm",
+                                    "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "事件",
+                                        "flex": 1,
+                                        "size": "sm",
+                                        "color": "#AAAAAA"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "玻璃感應器",
+                                        "flex": 4,
+                                        "size": "sm",
+                                        "color": "#666666",
+                                        "wrap": true
+                                    }
+                                    ]
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "baseline",
+                                    "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "描述",
+                                        "flex": 1,
+                                        "size": "sm",
+                                        "color": "#AAAAAA"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "偵測到玻璃感應器被拆開",
+                                        "flex": 4,
+                                        "size": "sm",
+                                        "color": "#666666"
+                                    }
+                                    ]
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "baseline",
+                                    "contents": [
+                                    {
+                                        "type": "text",
+                                        "text": "狀態",
+                                        "flex": 1,
+                                        "size": "sm",
+                                        "color": "#AAAAAA"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "未處理",
+                                        "flex": 4,
+                                        "size": "sm",
+                                        "color": "#666666"
+                                    }
+                                    ]
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                    "type": "postback",
+                                    "label": "已處理",
+                                    "text": "已經回報狀態囉！",
+                                    "data": "report&{ID}"
+                                    },
+                                    "color": "#17D859",
+                                    "margin": "sm",
+                                    "gravity": "center"
+                                }
+                                ]
+                            }
+                            ]
+                        }
+                        }
+                    },
+                },
+                json: true
+            };
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
             });
         } else {
             console.log('case OFF');
@@ -62,6 +445,21 @@ module.exports = function(rpio, config, database){
                 alert_ref.child(caseEventNoticeID).update({'state': '已處理'});
                 caseEventNoticeID = undefined;
             }
+            var options = {
+                method: 'POST',
+                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+                headers:
+                { 'Content-Type': 'application/json' },
+                body:
+                { department: config.main.college,
+                    space: config.main.spaceCode,
+                    message: { type: 'text', text: '玻璃感應器外殼以正確闔上' } },
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+            });
         }
     }
 
