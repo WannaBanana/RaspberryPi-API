@@ -62,13 +62,13 @@ module.exports = function(rpio, config, database){
     function _glassDetectPush() {
         // 觸發警告, 推到Line, 記錄到firebase
         console.log('Glass crack detect');
-        let currentTime = new Date().toISOString()
+        let currentTime = new Date();
         alert_ref.push({
             "type": "警報",
             "event": "玻璃感應器",
             "describe": "偵測到玻璃破碎",
             "state": "未處理",
-            "time": currentTime,
+            "time": currentTime.toISOString(),
             "source": config.main.college + config.main.spaceCode
         }).then((snapshot) => {
             var options = {
@@ -109,7 +109,7 @@ module.exports = function(rpio, config, database){
 
     function _glassCasePush() {
         caseState = (rpio.read(config.glass.casePIN) ? true : false);
-        let currentTime = new Date().toISOString()
+        let currentTime = new Date();
         if(caseState == false) {
             // 盒子開啟, 推到Line, 記錄到firebase
             console.log('case ON');
@@ -118,7 +118,7 @@ module.exports = function(rpio, config, database){
                 "event": "玻璃感應器",
                 "describe": "偵測到玻璃感應器被拆開",
                 "state": "未處理",
-                "time": currentTime,
+                "time": currentTime.toISOString(),
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
                 caseEventNoticeID = snapshot.key;
