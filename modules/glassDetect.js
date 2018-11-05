@@ -145,7 +145,7 @@ module.exports = function(rpio, config, database){
                                 }
                             ],
                             "title": "警告",
-                            "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString()
+                            "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
                             }
                         }
                     },
