@@ -4,6 +4,7 @@ const config = require('./ENV.json');
 const key = require('./servicePrivateKey.json')
 const admin = require("firebase-admin");
 const rpio = require('rpio');
+const cors = require('cors');
 const os = require('os');
 const ipAddr = os.networkInterfaces()['eth0'][0].address;
 
@@ -47,6 +48,7 @@ try {
     log.record('Server startup catch error <Error>: ' + err);
 }
 
+app.use(cors());
 app.use(function(req, res, next) {
     // 傳入模組控制
     req.rfid = rfid;
