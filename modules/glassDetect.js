@@ -87,12 +87,11 @@ module.exports = function(rpio, config, database){
                         "type": "buttons",
                         "actions": [
                             {
-                            "type": "postback",
-                            "label": "已處理",
-                            "text": "已更新系統狀態",
-                            "data": "report&" + snapshot.key
+                              "type": "message",
+                              "label": "已處理",
+                              "text": "已處理&" + snapshot.key
                             }
-                        ],
+                          ],
                         "title": "警報",
                         "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃破碎，時間：" + currentTime.toLocaleString()
                         }
@@ -139,12 +138,11 @@ module.exports = function(rpio, config, database){
                             "type": "buttons",
                             "actions": [
                                 {
-                                "type": "postback",
-                                "label": "已處理",
-                                "text": "已更新系統狀態",
-                                "data": "report&" + snapshot.key
+                                  "type": "message",
+                                  "label": "已處理",
+                                  "text": "已處理&" + snapshot.key
                                 }
-                            ],
+                              ],
                             "title": "警告",
                             "text": "[" + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
                             }
