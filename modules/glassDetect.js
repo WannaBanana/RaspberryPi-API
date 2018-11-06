@@ -17,6 +17,77 @@ module.exports = function(rpio, config, database){
 
 /* 事件函式(訊息管理) Private */
 
+    function _pushLineCrack(key) {
+        let currentTime = new Date();
+        var options = {
+            method: 'POST',
+            url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+            headers:
+            { 'Content-Type': 'application/json' },
+            body:
+            {
+                department: config.main.college,
+                space: config.main.spaceCode,
+                message: {
+                    "type": "template",
+                    "altText": "請使用手機接收本訊息",
+                    "template": {
+                    "type": "buttons",
+                    "actions": [
+                        {
+                          "type": "message",
+                          "label": "已處理",
+                          "text": "已處理&" + key
+                        }
+                      ],
+                    "title": "警報",
+                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器 ] — 偵測到玻璃破碎，時間：" + currentTime.toLocaleString() + "，辨識碼：" + key
+                    }
+                }
+                },
+                json: true
+        };
+
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+        });
+    }
+
+    function _pushLineCaseOpen(key) {
+        let currentTime = new Date();
+        var options = {
+            method: 'POST',
+            url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
+            headers:
+            { 'Content-Type': 'application/json' },
+            body:
+            {
+                department: config.main.college,
+                space: config.main.spaceCode,
+                message: {
+                    "type": "template",
+                    "altText": "請使用手機接收本訊息",
+                    "template": {
+                    "type": "buttons",
+                    "actions": [
+                        {
+                          "type": "message",
+                          "label": "已處理",
+                          "text": "已處理&" + key
+                        }
+                      ],
+                    "title": "警告",
+                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + key
+                    }
+                }
+            },
+            json: true
+        };
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+        });
+    }
+
     function _glassPowerPush(state) {
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
@@ -71,38 +142,7 @@ module.exports = function(rpio, config, database){
             "time": currentTime.toISOString(),
             "source": config.main.college + config.main.spaceCode
         }).then((snapshot) => {
-            var options = {
-                method: 'POST',
-                url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
-                headers:
-                { 'Content-Type': 'application/json' },
-                body:
-                {
-                    department: config.main.college,
-                    space: config.main.spaceCode,
-                    message: {
-                        "type": "template",
-                        "altText": "請使用手機接收本訊息",
-                        "template": {
-                        "type": "buttons",
-                        "actions": [
-                            {
-                              "type": "message",
-                              "label": "已處理",
-                              "text": "已處理&" + snapshot.key
-                            }
-                          ],
-                        "title": "警報",
-                        "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃破碎，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
-                        }
-                    }
-                    },
-                    json: true
-            };
-
-            request(options, function (error, response, body) {
-                if (error) throw new Error(error);
-            });
+            _pushLineCrack(snapshot.key);
         });
     }
 
@@ -120,39 +160,8 @@ module.exports = function(rpio, config, database){
                 "time": currentTime.toISOString(),
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
-                console.log('進入 snapshot: ', snapshot.key);
                 caseEventNoticeID = snapshot.key;
-                var options = {
-                    method: 'POST',
-                    url: 'https://xn--pss23c41retm.tw/api/linebot/notify',
-                    headers:
-                    { 'Content-Type': 'application/json' },
-                    body:
-                    {
-                        department: config.main.college,
-                        space: config.main.spaceCode,
-                        message: {
-                            "type": "template",
-                            "altText": "請使用手機接收本訊息",
-                            "template": {
-                            "type": "buttons",
-                            "actions": [
-                                {
-                                  "type": "message",
-                                  "label": "已處理",
-                                  "text": "已處理&" + snapshot.key
-                                }
-                              ],
-                            "title": "警告",
-                            "text": "[" + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
-                            }
-                        }
-                    },
-                    json: true
-                };
-                request(options, function (error, response, body) {
-                    if (error) throw new Error(error);
-                });
+                _pushLineCaseOpen(snapshot.key);
             });
         } else {
             console.log('case OFF');
