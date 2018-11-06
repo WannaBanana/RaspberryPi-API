@@ -20,7 +20,7 @@ module.exports = function(rpio, config, database){
     function _glassPowerPush(state) {
         if(state == true) {
             // 電源啟動, 推到Line, 更新firebase
-            // console.log('Power ON');
+            console.log('Power ON');
             ref.update({'power': '啟動'});
             var options = {
                 method: 'POST',
@@ -39,7 +39,7 @@ module.exports = function(rpio, config, database){
             });
         } else {
             // 電源關閉, 推到Line, 更新firebase
-            // console.log('Power OFF');
+            console.log('Power OFF');
             ref.update({'power': '關閉'});
             var options = {
                 method: 'POST',
@@ -61,7 +61,7 @@ module.exports = function(rpio, config, database){
 
     function _glassDetectPush() {
         // 觸發警告, 推到Line, 記錄到firebase
-        // console.log('Glass crack detect');
+        console.log('Glass crack detect');
         let currentTime = new Date();
         alert_ref.push({
             "type": "警報",
@@ -111,7 +111,7 @@ module.exports = function(rpio, config, database){
         let currentTime = new Date();
         if(caseState == false) {
             // 盒子開啟, 推到Line, 記錄到firebase
-            // console.log('case ON');
+            console.log('case ON');
             alert_ref.push({
                 "type": "警告",
                 "event": "玻璃感應器",
@@ -120,7 +120,7 @@ module.exports = function(rpio, config, database){
                 "time": currentTime.toISOString(),
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
-                // console.log('進入 snapshot: ', snapshot.key);
+                console.log('進入 snapshot: ', snapshot.key);
                 caseEventNoticeID = snapshot.key;
                 var options = {
                     method: 'POST',
@@ -152,11 +152,10 @@ module.exports = function(rpio, config, database){
                 };
                 request(options, function (error, response, body) {
                     if (error) throw new Error(error);
-                    // console.log(response, body);
                 });
             });
         } else {
-            // console.log('case OFF');
+            console.log('case OFF');
             if(caseEventNoticeID) {
                 alert_ref.child(caseEventNoticeID).update({'state': '已處理'});
                 caseEventNoticeID = undefined;
@@ -214,7 +213,7 @@ module.exports = function(rpio, config, database){
     // 初始化五秒後再進行玻璃偵測事件綁定, 因為初始化設定時玻璃偵測會先觸發通電
     setTimeout(() => {
         gpio.setup(config.glass.detectPIN, gpio.DIR_IN, gpio.EDGE_BOTH);
-        // console.log('glass_event binding success');
+        console.log('glass_event binding success');
     }, 5000);
 
 /* 作動函式(裝置管理) Private */

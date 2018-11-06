@@ -20,7 +20,7 @@ module.exports = function (config) {
         //Which camera to use
         //Use Webcam.list() for results
         //false for default device
-        device: false,
+        device: "/dev/video1",
         // [location, buffer, base64]
         // Webcam.CallbackReturnTypes
         callbackReturn: "location",
