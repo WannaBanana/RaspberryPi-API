@@ -121,6 +121,7 @@ module.exports = function(rpio, config, database){
                 "time": currentTime.toISOString(),
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
+                console.log('進入 snapshot');
                 caseEventNoticeID = snapshot.key;
                 var options = {
                     method: 'POST',
@@ -151,9 +152,9 @@ module.exports = function(rpio, config, database){
                     },
                     json: true
                 };
-                    request(options, function (error, response, body) {
-                        if (error) throw new Error(error);
-                    });
+                request(options, function (error, response, body) {
+                    if (error) throw new Error(error);
+                });
             });
         } else {
             console.log('case OFF');
