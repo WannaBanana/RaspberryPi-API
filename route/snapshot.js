@@ -8,7 +8,7 @@ router.get('/', function(req, res) {
     var proc = ffmpeg('rtmp://163.22.32.200:1935/live/R441')
         .on('end', function(files)
         {
-            res.sendFile(file);
+            res.sendfile(file);
         })
         .on('error', function(err)
         {
