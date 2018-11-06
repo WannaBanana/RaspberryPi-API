@@ -40,8 +40,8 @@ module.exports = function(rpio, config, database){
                           "text": "已處理&" + key
                         }
                       ],
-                    "title": "警報",
-                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器 ] — 偵測到玻璃破碎，時間：" + currentTime.toLocaleString() + "，驗證碼：" + key.slice(key.length - 5)
+                    "title": "警報 / 代碼：" + key.slice(key.length - 5),
+                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器 ] — 偵測到玻璃破碎，時間：" + currentTime.toLocaleString()
                     }
                 }
                 },
@@ -76,8 +76,8 @@ module.exports = function(rpio, config, database){
                           "text": "已處理&" + key
                         }
                       ],
-                    "title": "警吿",
-                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，驗證碼：" + key.slice(key.length - 5)
+                    "title": "警告 / 代碼：" + key.slice(key.length - 5),
+                    "text": "[ " + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString()
                     }
                 }
             },
