@@ -121,7 +121,7 @@ module.exports = function(rpio, config, database){
                 "time": currentTime.toISOString(),
                 "source": config.main.college + config.main.spaceCode
             }).then((snapshot) => {
-                console.log('進入 snapshot');
+                console.log('進入 snapshot: ', snapshot.key);
                 caseEventNoticeID = snapshot.key;
                 var options = {
                     method: 'POST',
@@ -146,7 +146,7 @@ module.exports = function(rpio, config, database){
                                 }
                             ],
                             "title": "警告",
-                            "text": "[" + config.main.college +" " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
+                            "text": "[" + config.main.college + " " + config.main.spaceCode + " - 玻璃感測器] — 偵測到玻璃感應器被拆開，時間：" + currentTime.toLocaleString() + "，辨識碼：" + snapshot.key
                             }
                         }
                     },
@@ -154,6 +154,7 @@ module.exports = function(rpio, config, database){
                 };
                 request(options, function (error, response, body) {
                     if (error) throw new Error(error);
+                    console.log(response, body);
                 });
             });
         } else {
