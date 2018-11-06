@@ -60,8 +60,10 @@ app.use(function(req, res, next) {
 const routeDoor = require('./route/door');
 const routeRfid = require('./route/rfid');
 const routeGlass = require('./route/glass');
+const routeSnapshot = require('./route/snapshot');
 
 app.use('/', [routeDoor, routeGlass, routeRfid]);
+app.use('/snapshot', routeSnapshot);
 
 // 系統終止事件函式
 function gracefulShutdown() {
