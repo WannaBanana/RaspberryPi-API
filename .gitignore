@@ -4,3 +4,5 @@ ENV.json
 servicePrivateKey.json
 log/*
 offlineData
+snapshot.png
+test.py
